@@ -1,0 +1,196 @@
+:root {
+    --bg-color: #1a1d22;
+    --primary-color: #ff9a00;
+    --secondary-color: #00e5ff;
+    --text-color: #e0e0e0;
+    --card-bg: #2a2f38;
+    --border-color: #4a5160;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Exo 2', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    background-image:
+        linear-gradient(rgba(26, 29, 34, 0.95), rgba(26, 29, 34, 0.95)),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23333' fill-opacity='0.1'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h4v-9H0v-1h4v-9H0v-1h4v-9H0v-1h4v-9H0v-1h4v-9H0v-1h4v-9H0v-1h4v-9H0v-1h4v-9H0v-1h5v1h9v-1h1v1h9v-1h1v1h9v-1h1v1h9v-1h1v1h9v-1h1v1h9v-1h1v1h9v-1h1v1h9v-1h1v1h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zM95 86h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zM95 76h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zM95 66h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zM95 56h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zM95 46h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zM95 36h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zM95 26h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zM95 16h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9zm-10 0h-9v9h9v-9z'/%3E%3Cpath d='M6 5V0h1v5h9V0h1v5h9V0h1v5h9V0h1v5h9V0h1v5h9V0h1v5h9V0h1v5h9V0h1v5h9V0h1v6H95v9H94v1H95v9H94v1H95v9H94v1H95v9H94v1H95v9H94v1H95v9H94v1H95v9H94v1H95v9H94v1H95v9H94v1H96v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4H0v-5h1V95h9V94h1V95h9V94h1V95h9V94h1V95h9V94h1V95h9V94h1V95h9V94h1V95h9V94h1V95h9V94h1V90h1V89h-1V80h1V79h-1V70h1V69h-1V60h1V59h-1V50h1V49h-1V40h1V39h-1V30h1V29h-1V20h1V19h-1V10h1V9h-1V0h-1v5H85V0h-1v5H75V0h-1v5H65V0h-1v5H55V0h-1v5H45V0h-1v5H35V0h-1v5H25V0h-1v5H15V0h-1v5H5V0H4v1H5v9H4v1H5v9H4v1H5v9H4v1H5v9H4v1H5v9H4v1H5v9H4v1H5v9H4v1H5v9H4v1H5v9H4v1H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    transition: background 1s ease-in-out;
+}
+
+body.event-active {
+    background-image: url('https://i.ytimg.com/vi/LgtUmTXVVcw/hqdefault.jpg?sqp=-oaymwEmCOADEOgC8quKqQMa8AEB-AH-BIAC4AOKAgwIABABGGUgTyhbMA8=&rs=AOn4CLBnB1qTP7_FaM6wlp0UslvZzN3E_Q');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 2px solid var(--primary-color);
+    margin-bottom: 30px;
+}
+
+header h1 {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+nav {
+    position: relative;
+}
+
+.nav-button {
+    background-color: var(--card-bg);
+    color: var(--secondary-color);
+    border: 1px solid var(--secondary-color);
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nav-button:hover {
+    background-color: var(--secondary-color);
+    color: var(--bg-color);
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 110%;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    min-width: 220px;
+    z-index: 1;
+    transform-origin: top;
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.dropdown-content.active {
+    display: block;
+    transform: scaleY(1);
+}
+
+.dropdown-content a {
+    color: var(--text-color);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.2s ease;
+}
+
+.dropdown-content a:hover {
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+}
+
+main h2 {
+    color: var(--secondary-color);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+
+.highlight-section {
+    text-align: center;
+    background-color: var(--card-bg);
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 40px;
+}
+
+.sopmod-gif {
+    max-width: 200px;
+    height: auto;
+    margin: 20px 0;
+    border: 3px solid var(--primary-color);
+}
+
+.tag-filter {
+    margin-bottom: 20px;
+}
+
+.tag-filter .tag {
+    background: transparent;
+    border: 1px solid var(--secondary-color);
+    color: var(--secondary-color);
+    padding: 5px 15px;
+    margin: 0 5px 5px 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.tag-filter .tag:hover, .tag-filter .tag.active {
+    background: var(--secondary-color);
+    color: var(--bg-color);
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 20px;
+    transition: all 0.3s ease;
+    display: block; /* Initially visible */
+}
+
+.card.hidden {
+    display: none;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-color);
+}
+
+.card h3 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.card .tags {
+    margin-top: 15px;
+}
+
+.card .tags .tag {
+    background-color: var(--border-color);
+    color: var(--text-color);
+    padding: 3px 8px;
+    font-size: 0.8rem;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+footer {
+    text-align: center;
+    margin-top: 50px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    color: #888;
+}
