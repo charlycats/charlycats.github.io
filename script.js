@@ -1,11 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Preloader Logic ---
+    const loader = document.getElementById('loader-wrapper');
+    window.addEventListener('load', () => {
+        loader.classList.add('hidden');
+    });
+
     // --- Audio on Click ---
     const clickSound = document.getElementById('clickSound');
     document.body.addEventListener('click', () => {
         clickSound.currentTime = 0;
         clickSound.play().catch(error => {
-            // This error is expected if the user hasn't interacted with the page yet.
-            // It is not a malfunction.
+            // This is not a malfunction. Autoplay policy requires user interaction.
         });
     });
 
@@ -16,9 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
         event.stopPropagation();
         dropdownMenu.classList.toggle('active');
     });
-    // Hide dropdown if clicking outside
-    document.addEventListener('click', (event) => {
-        if (!dropdownMenu.contains(event.target) && !dropdownButton.contains(event.target)) {
+    document.addEventListener('click', () => {
+        if (dropdownMenu.classList.contains('active')) {
             dropdownMenu.classList.remove('active');
         }
     });
@@ -29,20 +33,17 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         document.body.classList.add('event-active');
         notificationSound.play().catch(error => {
-            console.error("Notification sound failed to play:", error);
+            console.error("Notification sound could not be played:", error);
         });
     }, fiveMinutesInMillis);
 
     // --- Tag Filtering System ---
     const filterButtons = document.querySelectorAll('.tag-filter .tag');
     const cards = document.querySelectorAll('.card-grid .card');
-
     filterButtons.forEach(button => {
         button.addEventListener('click', () => {
-            // Manage active state for buttons
             filterButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
-
             const filterTag = button.dataset.tag;
             
             cards.forEach(card => {
@@ -55,6 +56,22 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     });
-    // Set 'ALL' as active by default
     document.querySelector('.tag-filter .tag[data-tag="all"]').classList.add('active');
+
+    // --- Intersection Observer for Scroll Animations ---
+    const animatedElements = document.querySelectorAll('.animate-on-scroll');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                // observer.unobserve(entry.target); // Optional: Stop observing after first animation
+            }
+        });
+    }, {
+        threshold: 0.1 // Trigger when 10% of the element is visible
+    });
+
+    animatedElements.forEach(el => {
+        observer.observe(el);
+    });
 });
