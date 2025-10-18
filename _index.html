@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G&K Archives - charlycats</title>
+    <link rel="icon" type="image/png" href="416.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="loader-wrapper">
+        <div class="loader"></div>
+        <div class="loader-text">AUTHENTICATING...</div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1 class="glow-text">G&K Tactical Archives</h1>
+            <nav>
+                <button id="dropdown-button" class="nav-button">CLASSIFIED DATA ▼</button>
+                <div id="dropdown-menu" class="dropdown-content">
+                    <a href="#">Echelon Management</a>
+                    <a href="#">Logistics Support</a>
+                    <a href="#">Combat Reports</a>
+                    <a href="#">Research & Development</a>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <section class="highlight-section animate-on-scroll">
+                <h2>Priority Directive</h2>
+                <div class="gif-container">
+                    <img src="https://cdn.discordapp.com/attachments/884481428291715122/1422705817978671184/josh_gif_hqha_m4_sopmod_II_jr.webp?ex=68dda58b&is=68dc540b&hm=eae80b6281fd5858df260284c576b4b523ea92e9c014d4fcf5ac329cfe5e857a&" alt="M4 SOPMOD II Jr. Dancing" class="sopmod-gif">
+                </div>
+                <p>Subject: M4 SOPMOD II Jr. - Maintain high morale. Observe combat-readiness dance protocol.</p>
+            </section>
+
+            <section class="content-section">
+                <h2 class="animate-on-scroll">T-Doll Database</h2>
+                <div class="tag-filter animate-on-scroll">
+                    <button class="tag" data-tag="all">ALL</button>
+                    <button class="tag" data-tag="ar">AR</button>
+                    <button class="tag" data-tag="smg">SMG</button>
+                    <button class="tag" data-tag="rf">RF</button>
+                    <button class="tag" data-tag="hg">HG</button>
+                </div>
+                <div class="card-grid">
+                    <div class="card animate-on-scroll" data-tags="ar">
+                        <h3>M4A1</h3>
+                        <p>AR Team Leader. Exceptional command module. High combat potential.</p>
+                        <div class="tags"><span class="tag-label">AR</span></div>
+                    </div>
+                    <div class="card animate-on-scroll" data-tags="smg">
+                        <h3>Vector</h3>
+                        <p>Specializes in close-quarters combat. Incendiary capabilities.</p>
+                        <div class="tags"><span class="tag-label">SMG</span></div>
+                    </div>
+                    <div class="card animate-on-scroll" data-tags="rf">
+                        <h3>WA2000</h3>
+                        <p>High-performance sniper. Prone to tsundere-like behavior.</p>
+                        <div class="tags"><span class="tag-label">RF</span></div>
+                    </div>
+                    <div class="card animate-on-scroll" data-tags="hg">
+                        <h3>Grizzly MkV</h3>
+                        <p>Provides excellent fire support buffs to the entire echelon.</p>
+                        <div class="tags"><span class="tag-label">HG</span></div>
+                    </div>
+                    <div class="card animate-on-scroll" data-tags="ar">
+                        <h3>ST AR-15</h3>
+                        <p>AR Team member. Focuses on high rate-of-fire and precision.</p>
+                        <div class="tags"><span class="tag-label">AR</span></div>
+                    </div>
+                     <div class="card animate-on-scroll" data-tags="smg hg">
+                        <h3>UMP45</h3>
+                        <p>Squad 404 leader. A cunning and pragmatic T-Doll with a mysterious past.</p>
+                        <div class="tags"><span class="tag-label">SMG</span><span class="tag-label">HG</span></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Griffin & Kryuger, Sector 09. Operated by Commander charlycats.</p>
+        </footer>
+    </div>
+
+    <audio id="clickSound" src="M4SopmodIIJr.mp3" preload="auto"></audio>
+    <audio id="notificationSound" src="NotificationSound.mp3" preload="auto"></audio>
+
+    <script src="script.js"></script>
+</body>
+</html>
