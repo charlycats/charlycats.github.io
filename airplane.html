@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airplane Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- Styles now match the modern dark theme of index.html --- */
+        :root {
+            --bg-color: #12121f;
+            --card-bg: #1a1a2e;
+            --text-color: #e0e0e0;
+            --primary-color: #9f7aea;
+            --border-color: #3a3a5e;
+            --shadow: 0 0 20px rgba(159, 122, 234, 0.15);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='%231a1a2e' fill-opacity='0.6'%3E%3Crect x='0' y='0' width='100' height='100'/%3E%3C/g%3E%3Cg fill-rule='evenodd' fill='%239f7aea' fill-opacity='0.05'%3E%3Cpath d='M99 1l-1 1-2 2-3 3-4 4-5 5-6 6-7 7-8 8-9 9-10 10-11 11-12 12-13 13-14 14-15 15-16 16-17 17-18 18-19 19v1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1L99 1z'/%3E%3C/g%3E%3C/svg%3E");
+            background-attachment: fixed;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 20px;
+        }
+
+        #game-container {
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        canvas { display: block; }
+
+        #game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        #game-over-screen h2 { font-size: 3rem; color: #f95959; margin: 0; }
+        #game-over-screen p { font-size: 1.5rem; margin-top: 10px; font-weight: 600; }
+        
+        .btn {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 12px 25px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        #retry-button { background-color: var(--primary-color); color: white; }
+        #retry-button:hover { background-color: #865cd6; }
+        #back-button { background-color: #4a4a6a; color: white; font-size: 0.9rem; padding: 10px 20px; }
+        #back-button:hover { background-color: #5a5a7a; }
+    </style>
+</head>
+<body>
+
+    <h1>Airplane Game</h1>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="480" height="640"></canvas>
+        <div id="game-over-screen">
+            <h2>Game Over</h2>
+            <p>Score: <span id="final-score">0</span></p>
+            <button id="retry-button" class="btn">Retry</button>
+            <a href="index.html" id="back-button" class="btn">Back to Home</a>
+        </div>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const finalScoreEl = document.getElementById('final-score');
+        const retryButton = document.getElementById('retry-button');
+
+        let planeY, planeVelocity, score, pipes, frameCount, isGameOver;
+        
+        const PLANE_X = 80;
+        const GRAVITY = 0.4;
+        const LIFT = -8;
+        const PIPE_WIDTH = 60;
+        const PIPE_GAP = 180;
+        const PIPE_SPAWN_RATE = 120;
+
+        function resetGame() {
+            planeY = canvas.height / 2;
+            planeVelocity = 0;
+            score = 0;
+            pipes = [];
+            frameCount = 0;
+            isGameOver = false;
+            gameOverScreen.style.display = 'none';
+            gameLoop();
+        }
+
+        function flap() { if (!isGameOver) { planeVelocity = LIFT; } }
+        function gameOver() { isGameOver = true; finalScoreEl.textContent = score; gameOverScreen.style.display = 'flex'; }
+
+        function gameLoop() {
+            if (isGameOver) return;
+
+            ctx.fillStyle = '#1c2541'; /* Dark night sky color */
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            planeVelocity += GRAVITY;
+            planeY += planeVelocity;
+            ctx.font = "40px sans-serif";
+            ctx.fillText('✈️', PLANE_X - 20, planeY);
+
+            frameCount++;
+            if (frameCount % PIPE_SPAWN_RATE === 0) {
+                const pipeY = Math.random() * (canvas.height - PIPE_GAP - 100) + 50;
+                pipes.push({ x: canvas.width, y: pipeY, passed: false });
+            }
+
+            ctx.fillStyle = '#9f7aea'; /* Pipes now use the primary accent color */
+
+            for (let i = pipes.length - 1; i >= 0; i--) {
+                let p = pipes[i];
+                p.x -= 3;
+
+                ctx.fillRect(p.x, 0, PIPE_WIDTH, p.y);
+                ctx.fillRect(p.x, p.y + PIPE_GAP, PIPE_WIDTH, canvas.height - p.y - PIPE_GAP);
+
+                if (p.x + PIPE_WIDTH < 0) { pipes.splice(i, 1); }
+                if (p.x + PIPE_WIDTH < PLANE_X && !p.passed) { score++; p.passed = true; }
+
+                if (PLANE_X + 20 > p.x && PLANE_X - 20 < p.x + PIPE_WIDTH && (planeY - 20 < p.y || planeY + 20 > p.y + PIPE_GAP)) { gameOver(); }
+            }
+
+            if (planeY > canvas.height - 20 || planeY < 20) { gameOver(); }
+
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#12121f';
+            ctx.lineWidth = 4;
+            ctx.font = "40px 'Poppins', sans-serif";
+            ctx.textAlign = "center";
+            ctx.strokeText(score, canvas.width / 2, 60);
+            ctx.fillText(score, canvas.width / 2, 60);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        document.addEventListener('keydown', (e) => { if (e.code === 'Space') flap(); });
+        canvas.addEventListener('mousedown', flap);
+        retryButton.addEventListener('click', resetGame);
+
+        resetGame();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plinko Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #12121f;
+            --card-bg: #1a1a2e;
+            --text-color: #e0e0e0;
+            --primary-color: #9f7aea;
+            --border-color: #3a3a5e;
+            --shadow: 0 0 20px rgba(159, 122, 234, 0.15);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        #game-container {
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        canvas { display: block; }
+        
+        .controls {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+        
+        .control-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        
+        .control-group label { font-weight: 600; color: #a0a0c0; }
+        
+        .control-group input, .control-group select {
+            width: 100%;
+            background-color: #12121f;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.75rem;
+            border-radius: 5px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        #balance-display {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        #drop-button, #back-button {
+            padding: 1rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            color: #fff;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        #drop-button:hover { background-color: #865cd6; }
+        #drop-button:disabled { background-color: #4a4a6a; cursor: not-allowed; }
+        
+        #back-button {
+            margin-top: 1rem;
+            background-color: #4a4a6a;
+            font-size: 0.9rem;
+            padding: 0.75rem;
+        }
+        #back-button:hover { background-color: #5a5a7a; }
+    </style>
+</head>
+<body>
+
+    <div class="game-wrapper">
+        <div class="controls">
+            <div class="control-group">
+                <label>Balance</label>
+                <div id="balance-display">$1000.00</div>
+            </div>
+            <div class="control-group">
+                <label for="bet-amount">Bet Amount</label>
+                <input type="number" id="bet-amount" value="10" min="1">
+            </div>
+            <div class="control-group">
+                <label for="risk-level">Risk Level</label>
+                <select id="risk-level">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="rows">Rows</label>
+                <select id="rows">
+                    <option value="8">8</option>
+                    <option value="10">10</option>
+                    <option value="12" selected>12</option>
+                    <option value="14">14</option>
+                    <option value="16">16</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="balls">Balls per drop</label>
+                <input type="number" id="balls" value="1" min="1" max="20">
+            </div>
+            <button id="drop-button">Drop Ball(s)</button>
+            <a href="index.html" id="back-button">Back to Home</a>
+        </div>
+        <div id="game-container">
+            <canvas id="plinko-canvas"></canvas>
+        </div>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('plinko-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // --- DOM Elements ---
+        const betAmountInput = document.getElementById('bet-amount');
+        const riskLevelSelect = document.getElementById('risk-level');
+        const rowsSelect = document.getElementById('rows');
+        const ballsInput = document.getElementById('balls');
+        const dropButton = document.getElementById('drop-button');
+        const balanceDisplay = document.getElementById('balance-display');
+        
+        // --- Sound Effects (Base64 encoded to be self-contained) ---
+        const pegHitSound = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUf///////+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+Ag-');
+        pegHitSound.volume = 0.5;
+        const prizeSound = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUf///////+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+AgP//gID//4CA//+A=');
+        prizeSound.volume = 0.6;
+        
+        // --- Game State ---
+        let balance = 1000.00;
+        let pegs = [];
+        let multipliers = [];
+        let activeBalls = [];
+        let particles = [];
+        let floatingTexts = [];
+        let gameSettings = {};
+
+        // --- Game Constants ---
+        const GRAVITY = 0.15;
+        const BOUNCE_FACTOR = 0.6;
+        
+        // --- NEW Rebalanced Multipliers ---
+        const MULTIPLIERS = {
+            low: {
+                8: [5.6, 2.1, 1.1, 1, 0.5, 1, 1.1, 2.1, 5.6],
+                10: [8.9, 3, 1.3, 1.1, 1, 0.5, 1, 1.1, 1.3, 3, 8.9],
+                12: [10, 3, 1.4, 1.3, 1.1, 1, 0.5, 1, 1.1, 1.3, 1.4, 3, 10],
+                14: [12, 4, 1.8, 1.4, 1.1, 1, 0.5, 0.5, 1, 1.1, 1.4, 1.8, 4, 12],
+                16: [16, 9, 2, 1.4, 1.1, 1, 0.5, 0.3, 0.5, 1, 1.1, 1.4, 2, 9, 16]
+            },
+            medium: {
+                8: [13, 4, 2, 1.1, 0.4, 1.1, 2, 4, 13],
+                10: [22, 5, 2, 1.2, 0.5, 0.4, 0.5, 1.2, 2, 5, 22],
+                12: [33, 11, 4, 2, 1.1, 0.5, 0.3, 0.5, 1.1, 2, 4, 11, 33],
+                14: [58, 18, 7, 3, 1.4, 0.5, 0.3, 0.3, 0.5, 1.4, 3, 7, 18, 58],
+                16: [110, 24, 10, 5, 3, 1.5, 0.3, 0.2, 0.3, 1.5, 3, 5, 10, 24, 110]
+            },
+            high: {
+                8: [29, 5, 1.5, 0.3, 0.2, 0.3, 1.5, 5, 29],
+                10: [76, 10, 3, 0.8, 0.3, 0.2, 0.3, 0.8, 3, 10, 76],
+                12: [170, 25, 6, 2, 0.5, 0.3, 0.2, 0.3, 0.5, 2, 6, 25, 170],
+                14: [420, 50, 15, 4, 1, 0.3, 0.2, 0.2, 0.3, 1, 4, 15, 50, 420],
+                16: [1000, 130, 26, 9, 4, 2, 0.2, 0.2, 0.2, 2, 4, 9, 26, 130, 1000]
+            }
+        };
+        
+        function setupCanvas() {
+            const rows = parseInt(rowsSelect.value);
+            const dpr = window.devicePixelRatio || 1;
+            const baseWidth = 600;
+            // Height is now calculated dynamically based on row count
+            const horizontalPadding = 40;
+            const boardWidth = baseWidth - horizontalPadding;
+            const rowSpacing = boardWidth / rows;
+            const baseHeight = (rows + 3) * (rowSpacing * 0.9) + 100;
+
+            canvas.width = baseWidth * dpr;
+            canvas.height = baseHeight * dpr;
+            canvas.style.width = `${baseWidth}px`;
+            canvas.style.height = `${baseHeight}px`;
+            ctx.scale(dpr, dpr);
+            
+            generateBoard();
+        }
+
+        function generateBoard() {
+            const rows = parseInt(rowsSelect.value);
+            const risk = riskLevelSelect.value;
+            const canvasWidth = canvas.clientWidth;
+            const canvasHeight = canvas.clientHeight;
+            
+            // --- DYNAMIC GEOMETRY CALCULATION ---
+            const horizontalPadding = 40;
+            const boardWidth = canvasWidth - horizontalPadding;
+            
+            gameSettings = {
+                rows: rows,
+                risk: risk,
+                canvasWidth: canvasWidth,
+                canvasHeight: canvasHeight,
+                rowSpacing: boardWidth / rows,
+                ballRadius: (boardWidth / rows) * 0.18,
+                pegRadius: (boardWidth / rows) * 0.1
+            };
+            gameSettings.verticalSpacing = gameSettings.rowSpacing * 0.9;
+            
+            // Generate Pegs
+            pegs = [];
+            for (let row = 0; row < gameSettings.rows; row++) {
+                const numPegsInRow = row + 1;
+                const totalRowWidth = (numPegsInRow - 1) * gameSettings.rowSpacing;
+                const startX = (gameSettings.canvasWidth / 2) - (totalRowWidth / 2);
+                
+                for (let col = 0; col < numPegsInRow; col++) {
+                    pegs.push({
+                        x: startX + col * gameSettings.rowSpacing,
+                        y: 80 + row * gameSettings.verticalSpacing
+                    });
+                }
+            }
+            
+            // Generate Multipliers
+            multipliers = [];
+            const multiplierValues = MULTIPLIERS[risk][rows];
+            const numBuckets = rows + 1;
+            const bucketWidth = gameSettings.rowSpacing;
+            const totalBucketWidth = numBuckets * bucketWidth;
+            const bucketStartX = (gameSettings.canvasWidth / 2) - (totalBucketWidth / 2);
+            
+            for (let i = 0; i < numBuckets; i++) {
+                // Symmetrical mapping of multipliers
+                let multiplierIndex = i;
+                if (i > numBuckets / 2) {
+                    multiplierIndex = numBuckets - 1 - i;
+                }
+                const value = multiplierValues[multiplierIndex];
+                multipliers.push({
+                    x: bucketStartX + i * bucketWidth,
+                    width: bucketWidth,
+                    value: value,
+                    color: getMultiplierColor(value)
+                });
+            }
+        }
+        
+        function getMultiplierColor(value) {
+            if (value < 1) return '#8a92b2';
+            if (value < 5) return '#9f7aea';
+            if (value < 20) return '#48bb78';
+            if (value < 100) return '#f6ad55';
+            return '#f56565';
+        }
+
+        function dropBall() {
+            const bet = parseFloat(betAmountInput.value);
+            const numBalls = parseInt(ballsInput.value);
+
+            if (balance < bet * numBalls) {
+                alert("Not enough balance!");
+                return;
+            }
+
+            balance -= bet * numBalls;
+            updateBalance();
+            
+            for (let i = 0; i < numBalls; i++) {
+                setTimeout(() => {
+                    activeBalls.push({
+                        x: gameSettings.canvasWidth / 2 + (Math.random() - 0.5) * 20,
+                        y: 30,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: 0,
+                        radius: gameSettings.ballRadius,
+                        bet: bet
+                    });
+                }, i * 100);
+            }
+        }
+        
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawPegs();
+            drawMultipliers();
+
+            for (let i = activeBalls.length - 1; i >= 0; i--) {
+                const ball = activeBalls[i];
+                ball.vy += GRAVITY;
+                ball.y += ball.vy;
+                ball.x += ball.vx;
+
+                // Wall collision
+                if (ball.x - ball.radius < 0 || ball.x + ball.radius > gameSettings.canvasWidth) {
+                    ball.vx *= -1;
+                }
+
+                // Peg collision
+                pegs.forEach(peg => {
+                    const dx = ball.x - peg.x;
+                    const dy = ball.y - peg.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < ball.radius + gameSettings.pegRadius) {
+                        pegHitSound.currentTime = 0;
+                        pegHitSound.play();
+                        
+                        const angle = Math.atan2(dy, dx);
+                        ball.vx = Math.cos(angle) * BOUNCE_FACTOR * 3;
+                        ball.vy = Math.sin(angle) * BOUNCE_FACTOR * 3;
+                        ball.vx += (Math.random() - 0.5) * 2;
+                    }
+                });
+                
+                // Check for multiplier landing
+                if (ball.y > gameSettings.canvasHeight - 50) {
+                    let landed = false;
+                    multipliers.forEach(m => {
+                        if (!landed && ball.x > m.x && ball.x < m.x + m.width) {
+                            handleWin(ball, m);
+                            activeBalls.splice(i, 1);
+                            landed = true;
+                        }
+                    });
+                     // Failsafe removal
+                    if (!landed && ball.y > gameSettings.canvasHeight + 20) {
+                        activeBalls.splice(i, 1);
+                    }
+                }
+                
+                if (ball) drawBall(ball);
+            }
+            
+            updateAndDrawParticles();
+            updateAndDrawFloatingTexts();
+
+            requestAnimationFrame(update);
+        }
+        
+        function handleWin(ball, multiplier) {
+            const winnings = ball.bet * multiplier.value;
+            balance += winnings;
+            updateBalance();
+            
+            prizeSound.currentTime = 0;
+            prizeSound.play();
+            
+            createParticles(ball.x, gameSettings.canvasHeight - 40, multiplier.color);
+            createFloatingText(`+${winnings.toFixed(2)}`, ball.x, gameSettings.canvasHeight - 40, multiplier.color);
+        }
+
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 30; i++) {
+                particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.8) * 8,
+                    size: Math.random() * 3 + 1,
+                    life: 50,
+                    color: color
+                });
+            }
+        }
+        
+        function createFloatingText(text, x, y, color) {
+            floatingTexts.push({ text, x, y, life: 80, color });
+        }
+        
+        function updateAndDrawParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.1;
+                p.life--;
+
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                } else {
+                    ctx.globalAlpha = p.life / 50;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+            }
+        }
+
+        function updateAndDrawFloatingTexts() {
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                const t = floatingTexts[i];
+                t.y -= 1;
+                t.life--;
+                
+                if (t.life <= 0) {
+                    floatingTexts.splice(i, 1);
+                } else {
+                    ctx.globalAlpha = t.life / 80;
+                    ctx.fillStyle = t.color;
+                    ctx.font = 'bold 20px Poppins';
+                    ctx.textAlign = 'center';
+                    ctx.shadowColor = '#000';
+                    ctx.shadowBlur = 5;
+                    ctx.fillText(t.text, t.x, t.y);
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+            }
+        }
+
+        function drawBall(ball) {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#f7fafc';
+            ctx.shadowColor = '#f7fafc';
+            ctx.shadowBlur = 15;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+
+        function drawPegs() {
+            ctx.fillStyle = '#8a92b2';
+            pegs.forEach(peg => {
+                ctx.beginPath();
+                ctx.arc(peg.x, peg.y, gameSettings.pegRadius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+        
+        function drawMultipliers() {
+            const y = gameSettings.canvasHeight - 40;
+            multipliers.forEach(m => {
+                ctx.fillStyle = m.color;
+                ctx.globalAlpha = 0.3;
+                ctx.fillRect(m.x, y, m.width, 40);
+                ctx.globalAlpha = 1;
+                
+                ctx.fillStyle = '#fff';
+                const fontSize = Math.min(14, m.width * 0.3);
+                ctx.font = `bold ${fontSize}px Poppins`;
+                ctx.textAlign = 'center';
+                ctx.fillText(`${m.value}x`, m.x + m.width / 2, y + 25);
+            });
+        }
+        
+        function updateBalance() {
+            balanceDisplay.textContent = `$${balance.toFixed(2)}`;
+        }
+
+        // --- Event Listeners ---
+        dropButton.addEventListener('click', () => {
+            const bet = parseFloat(betAmountInput.value);
+            const numBalls = parseInt(ballsInput.value);
+            if(balance >= bet * numBalls && bet > 0){
+                dropBall();
+            }
+        });
+        
+        riskLevelSelect.addEventListener('change', generateBoard);
+        rowsSelect.addEventListener('change', setupCanvas);
+
+        // --- Initial Setup ---
+        setupCanvas();
+        updateBalance();
+        update();
+    </script>
+</body>
+</html>
