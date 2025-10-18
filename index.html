@@ -201,6 +201,28 @@
             to { transform: rotate(360deg); }
         }
 
+        /* ADDED CSS FOR GAME BUTTON */
+        .game-button {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 15px 30px;
+            font-family: 'Press Start 2P', cursive;
+            text-decoration: none;
+            color: var(--cyan);
+            background: transparent;
+            border: 3px solid var(--cyan);
+            box-shadow: 0 0 10px var(--cyan);
+            transition: all 0.3s ease;
+            text-shadow: 0 0 5px var(--cyan);
+        }
+
+        .game-button:hover {
+            color: var(--dark-bg);
+            background: var(--cyan);
+            box-shadow: 0 0 25px var(--cyan), 0 0 40px var(--cyan);
+            transform: translateY(-5px);
+        }
+
     </style>
 </head>
 <body>
@@ -231,6 +253,13 @@
                 </p>
             </section>
 
+            <!-- NEW SECTION FOR GAME BUTTON -->
+            <section class="content-box">
+                <h3>// MINI-GAME CHALLENGE</h3>
+                <p>Think you can handle the g-force? Prove your worthiness to charlycats-sempai!</p>
+                <a href="game.html" class="game-button">START MISSION</a>
+            </section>
+
             <section class="comments-section">
                 <h2>Leave Your Tribute (コメント)</h2>
                 <p style="text-align:center; font-size: 0.8rem; color: #aaa;">
@@ -239,7 +268,7 @@
 
                 <!-- 💖💖💖 Giscus Comment Section - YOU MUST EDIT THIS 💖💖💖 -->
                 <!-- Go to giscus.app, configure your repo, and replace the values below -->
-                <!-- with the ones from the script tag giscus gives you. -->
+                <!-- Remember to get the correct data-category-id from giscus.app! -->
                 <script src="https://giscus.app/client.js"
                         data-repo="charlycats/charlycats.github.io"
                         data-repo-id="R_kgDOPyqOEQ"
