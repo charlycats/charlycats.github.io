@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purr Clicker | charlycats' Website</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #12121f;
+            --card-bg: #1a1a2e;
+            --text-color: #e0e0e0;
+            --primary-color: #9f7aea;
+            --border-color: #3a3a5e;
+            --shadow: 0 0 20px rgba(159, 122, 234, 0.15);
+        }
+
+        /* --- MODIFIED TO FIT VIEWPORT & HIDE SCROLLBAR --- */
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* This removes the main scrollbar */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='%231a1a2e' fill-opacity='0.6'%3E%3Crect x='0' y='0' width='100' height='100'/%3E%3C/g%3E%3Cg fill-rule='evenodd' fill='%239f7aea' fill-opacity='0.05'%3E%3Cpath d='M99 1l-1 1-2 2-3 3-4 4-5 5-6 6-7 7-8 8-9 9-10 10-11 11-12 12-13 13-14 14-15 15-16 16-17 17-18 18-19 19v1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1L99 1z'/%3E%3C/g%3E%3C/svg%3E");
+            background-attachment: fixed;
+            
+            /* These properties center the container perfectly */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            
+            /* Constrain the container height to prevent overflow */
+            max-height: 95vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--primary-color);
+            margin: 0 0 1.5rem 0; /* Adjusted margin */
+            flex-shrink: 0;
+        }
+
+        main {
+            overflow: hidden; /* Hide overflow from main content area */
+        }
+        
+        .game-container {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .clicker-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            position: sticky; 
+            top: 20px;
+        }
+
+        #clicker-btn {
+            width: 200px;
+            height: 200px;
+            cursor: pointer;
+            transition: transform 0.1s ease-out;
+            user-select: none;
+        }
+        #clicker-btn:active { transform: scale(0.95); }
+
+        .score-info h2 { font-size: 2.5rem; margin: 1.5rem 0 0.5rem; color: var(--text-color); }
+        .score-info #score-display { color: var(--primary-color); font-weight: 700; }
+        .score-info p { margin: 0; color: #a0a0b0; }
+
+        .upgrades-section {
+            /* This is the scrolling shop area */
+            max-height: 58vh; /* Adjusted height to fit better */
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        .upgrades-section h3 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin: 0 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        /* Custom scrollbar for upgrades section */
+        .upgrades-section::-webkit-scrollbar { width: 8px; }
+        .upgrades-section::-webkit-scrollbar-track { background: transparent; }
+        .upgrades-section::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 4px; }
+        .upgrades-section::-webkit-scrollbar-thumb:hover { background: #865cd6; }
+
+        .upgrade-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; margin-bottom: 0.75rem; background-color: rgba(0,0,0,0.2); border-radius: 8px; border-left: 4px solid var(--border-color); transition: background-color 0.2s; }
+        .upgrade-item:hover { background-color: rgba(159, 122, 234, 0.1); }
+        .upgrade-info h4 { margin: 0 0 0.25rem; font-size: 1.1rem; color: var(--text-color); }
+        .upgrade-info p { margin: 0; font-size: 0.85rem; color: #a0a0b0; }
+        .upgrade-action button { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 0.9rem; padding: 8px 16px; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; }
+        .upgrade-action button:hover { background-color: #865cd6; }
+        .upgrade-action button.disabled { background-color: #4a4a6a; cursor: not-allowed; pointer-events: none; }
+        .upgrade-action .cost { display: block; text-align: right; font-size: 0.9rem; color: #a0a0b0; margin-bottom: 4px; }
+        .owned-count { font-size: 2rem; font-weight: 700; color: var(--border-color); margin-right: 1rem; text-align: center; min-width: 40px; }
+
+        footer { text-align: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color); font-size: 0.9rem; flex-shrink: 0; }
+        footer a { color: var(--primary-color); text-decoration: none; font-weight: 600; }
+        footer a:hover { text-decoration: underline; }
+        footer button { background: none; border: 1px solid #666; color: #888; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+
+        @media (max-width: 900px) {
+            body { display: block; padding: 20px; overflow: auto; } /* Re-enable scroll on mobile */
+            .container { max-height: none; }
+            .game-container { grid-template-columns: 1fr; }
+            .clicker-section { position: static; margin-bottom: 2rem; }
+            .upgrades-section { max-height: 400px; } /* Give a fixed scroll height on mobile */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Purr Clicker</h1>
+        </header>
+
+        <main>
+            <div class="game-container">
+                <section class="clicker-section">
+                    <img src="giphy.gif" alt="Clickable Cat" id="clicker-btn">
+                    <div class="score-info">
+                        <h2><span id="score-display">0</span> Purrs</h2>
+                        <p><span id="pps-display">0</span> purrs per second</p>
+                    </div>
+                </section>
+
+                <section class="upgrades-section">
+                    <h3>Shop</h3>
+                    <div id="upgrades-container">
+                        <!-- Upgrades will be generated here by JavaScript -->
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer>
+            <p><a href="index.html">← Back to Home</a> | <button id="reset-btn">Reset Progress</button></p>
+        </footer>
+    </div>
+
+    <script>
+        // --- JAVASCRIPT IS UNCHANGED, NO NEED TO COPY IF YOU HAVE IT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const clickerBtn = document.getElementById('clicker-btn');
+            const scoreDisplay = document.getElementById('score-display');
+            const ppsDisplay = document.getElementById('pps-display');
+            const upgradesContainer = document.getElementById('upgrades-container');
+            const resetBtn = document.getElementById('reset-btn');
+
+            let gameState = {
+                score: 0,
+                clickPower: 1,
+                upgrades: {
+                    'betterScritches': { name: 'Better Scritches', desc: '+1 Purr per click', baseCost: 15, costMultiplier: 1.15, bonus: 1, count: 0, type: 'click' },
+                    'catnipToy': { name: 'Catnip Toy', desc: '+1 Purr per second', baseCost: 50, costMultiplier: 1.20, bonus: 1, count: 0, type: 'auto' },
+                    'fancyWand': { name: 'Fancy Feather Wand', desc: '+5 Purrs per click', baseCost: 100, costMultiplier: 1.25, bonus: 5, count: 0, type: 'click' },
+                    'cardboardBox': { name: 'Cardboard Box', desc: '+3 Purrs per second (It\'s very effective)', baseCost: 150, costMultiplier: 1.20, bonus: 3, count: 0, type: 'auto' },
+                    'cozyBed': { name: 'Cozy Bed', desc: '+10 Purrs per second', baseCost: 500, costMultiplier: 1.25, bonus: 10, count: 0, type: 'auto' },
+                    'heatedBlanket': { name: 'Heated Blanket', desc: '+25 Purrs per second', baseCost: 2000, costMultiplier: 1.25, bonus: 25, count: 0, type: 'auto' },
+                    'laserPointer': { name: 'Laser Pointer', desc: '+50 Purrs per click', baseCost: 5000, costMultiplier: 1.30, bonus: 50, count: 0, type: 'click' },
+                    'gourmetTuna': { name: 'Gourmet Tuna Can', desc: '+100 Purrs per second', baseCost: 12000, costMultiplier: 1.30, bonus: 100, count: 0, type: 'auto' },
+                    'autoPetter': { name: 'Auto-Petter 3000', desc: '+250 Purrs per second', baseCost: 40000, costMultiplier: 1.30, bonus: 250, count: 0, type: 'auto' },
+                    'sunbeam': { name: 'Sunbeam Generator', desc: '+750 Purrs per second', baseCost: 150000, costMultiplier: 1.35, bonus: 750, count: 0, type: 'auto' },
+                    'catTreeSkyscraper': { name: 'Cat Tree Skyscraper', desc: '+2,000 Purrs per second', baseCost: 500000, costMultiplier: 1.35, bonus: 2000, count: 0, type: 'auto' },
+                    'infiniteYarn': { name: 'Infinite Ball of Yarn', desc: '+1,000 Purrs per click', baseCost: 1000000, costMultiplier: 1.40, bonus: 1000, count: 0, type: 'click' },
+                    'humanServant': { name: 'Personal Human Servant', desc: '+10,000 Purrs per second', baseCost: 3500000, costMultiplier: 1.35, bonus: 10000, count: 0, type: 'auto' },
+                    'moonCheese': { name: 'The Moon (Made of Cheese)', desc: '+50,000 Purrs per second', baseCost: 15000000, costMultiplier: 1.40, bonus: 50000, count: 0, type: 'auto' },
+                    'purringBlackHole': { name: 'A Purring Black Hole', desc: '+250,000 Purrs per second', baseCost: 100000000, costMultiplier: 1.40, bonus: 250000, count: 0, type: 'auto' }
+                }
+            };
+            
+            function formatNumber(num) {
+                if (num < 1000) return Math.floor(num).toLocaleString();
+                const si = [
+                    { v: 1E3, s: "K" }, { v: 1E6, s: "M" }, { v: 1E9, s: "B" }, 
+                    { v: 1E12, s: "T" }, { v: 1E15, s: "P" }, { v: 1E18, s: "E" }
+                ];
+                let i;
+                for (i = si.length - 1; i > 0; i--) {
+                    if (num >= si[i].v) { break; }
+                }
+                return (num / si[i].v).toFixed(2).replace(/\.0+$|(\.[0-9]*[1-9])0+$/, "$1") + si[i].s;
+            }
+
+            function calculatePurrsPerSecond() {
+                let pps = 0;
+                for (const key in gameState.upgrades) {
+                    const upgrade = gameState.upgrades[key];
+                    if (upgrade.type === 'auto') { pps += upgrade.bonus * upgrade.count; }
+                }
+                return pps;
+            }
+
+            function updateDisplay() {
+                scoreDisplay.textContent = formatNumber(gameState.score);
+                ppsDisplay.textContent = formatNumber(calculatePurrsPerSecond());
+                document.title = `${formatNumber(gameState.score)} Purrs | Purr Clicker`;
+            }
+
+            function renderUpgrades() {
+                upgradesContainer.innerHTML = '';
+                for (const key in gameState.upgrades) {
+                    const upgrade = gameState.upgrades[key];
+                    const currentCost = Math.ceil(upgrade.baseCost * Math.pow(upgrade.costMultiplier, upgrade.count));
+                    const canAfford = gameState.score >= currentCost;
+                    
+                    const el = document.createElement('div');
+                    el.className = 'upgrade-item';
+                    el.innerHTML = `
+                        <div class="owned-count">${upgrade.count}</div>
+                        <div class="upgrade-info">
+                            <h4>${upgrade.name}</h4>
+                            <p>${upgrade.desc}</p>
+                        </div>
+                        <div class="upgrade-action">
+                            <span class="cost">Cost: ${formatNumber(currentCost)}</span>
+                            <button data-upgrade-key="${key}" class="${canAfford ? '' : 'disabled'}">Buy</button>
+                        </div>
+                    `;
+                    upgradesContainer.appendChild(el);
+                }
+            }
+
+            function handleManualClick() {
+                gameState.score += gameState.clickPower;
+                updateDisplay();
+                if (frameCounter % 5 === 0) renderUpgrades();
+            }
+
+            function handleBuyUpgrade(e) {
+                if (e.target.tagName !== 'BUTTON') return;
+                
+                const key = e.target.dataset.upgradeKey;
+                const upgrade = gameState.upgrades[key];
+                const currentCost = Math.ceil(upgrade.baseCost * Math.pow(upgrade.costMultiplier, upgrade.count));
+
+                if (gameState.score >= currentCost) {
+                    gameState.score -= currentCost;
+                    upgrade.count++;
+                    if (upgrade.type === 'click') {
+                        gameState.clickPower += upgrade.bonus;
+                    }
+                    updateDisplay();
+                    renderUpgrades();
+                }
+            }
+            
+            function saveGame() {
+                localStorage.setItem('purrClickerSave_v2', JSON.stringify(gameState));
+            }
+
+            function loadGame() {
+                const savedGame = localStorage.getItem('purrClickerSave_v2');
+                if (savedGame) {
+                    const loadedState = JSON.parse(savedGame);
+                    gameState.score = loadedState.score || 0;
+                    gameState.clickPower = loadedState.clickPower || 1;
+                    for (const key in loadedState.upgrades) {
+                        if (gameState.upgrades[key] && loadedState.upgrades[key]) {
+                            gameState.upgrades[key].count = loadedState.upgrades[key].count || 0;
+                        }
+                    }
+                }
+            }
+
+            function resetGame() {
+                if (confirm('Are you sure you want to reset all your progress? This cannot be undone!')) {
+                    localStorage.removeItem('purrClickerSave_v2');
+                    location.reload();
+                }
+            }
+            
+            let frameCounter = 0;
+            function gameLoop() {
+                gameState.score += calculatePurrsPerSecond() / 10;
+                frameCounter++;
+                if(frameCounter >= 10) { 
+                   updateDisplay();
+                   renderUpgrades();
+                   frameCounter = 0;
+                }
+            }
+            
+            clickerBtn.addEventListener('click', handleManualClick);
+            upgradesContainer.addEventListener('click', handleBuyUpgrade);
+            resetBtn.addEventListener('click', resetGame);
+            
+            loadGame();
+            updateDisplay();
+            renderUpgrades();
+
+            setInterval(gameLoop, 100);
+            setInterval(saveGame, 15000);
+        });
+    </script>
+</body>
+</html>
