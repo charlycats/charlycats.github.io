@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Susej Clicker | charlycats' Website</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -29,7 +29,7 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: 'Poppins', sans-serif;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='%231a1a2e' fill-opacity='0.6'%3E%3Crect x='0' y='0' width='100' height='100'/%3E%3C/g%3E%3Cg fill-rule='evenodd' fill='%239f7aea' fill-opacity='0.05'%3E%3Cpath d='M99 1l-1 1-2 2-3 3-4 4-5 5-6 6-7 7-8 8-9 9-10 10-11 11-12 12-13 13-14 14-15 15-16 16-17 17-18 18-19 19v1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1L99 1z'/%3E%3C/g%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='%231a1a2e' fill-opacity='0.6'%3E%3Crect x='0' y='0' width='100' height='100'/%3E%3C/g%3E%3Cg fill-rule='evenodd' fill='%239f7aea' fill-opacity='0.05'%3E%3Cpath d='M99 1l-1 1-2 2-3 3-4 4-5 5-6 6-7 7-8 8-9 9-10 10-11 11-12 12-13 13-14 14-15 15-16 16-17 17-18 18-19 19v1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1L99 1z'/%3E%3C/g%3E%3C/svg%3E");
             background-attachment: fixed;
             
             /* These properties center the container perfectly */
@@ -179,14 +179,14 @@
     </div>
 
     <script>
-        // --- JAVASCRIPT IS UNCHANGED, NO NEED TO COPY IF YOU HAVE IT ---
         document.addEventListener('DOMContentLoaded', () => {
             const clickerBtn = document.getElementById('clicker-btn');
             const scoreDisplay = document.getElementById('score-display');
             const ppsDisplay = document.getElementById('pps-display');
             const upgradesContainer = document.getElementById('upgrades-container');
             const resetBtn = document.getElementById('reset-btn');
-
+            
+            // This object holds all the game data that needs to be saved.
             let gameState = {
                 score: 0,
                 clickPower: 1,
@@ -264,6 +264,7 @@
             function handleManualClick() {
                 gameState.score += gameState.clickPower;
                 updateDisplay();
+                // This check prevents the shop from re-rendering on every single click, which improves performance.
                 if (frameCounter % 5 === 0) renderUpgrades();
             }
 
@@ -285,17 +286,27 @@
                 }
             }
             
+            // --- SAVE, LOAD, AND RESET FUNCTIONS ---
+
             function saveGame() {
-                localStorage.setItem('purrClickerSave_v2', JSON.stringify(gameState));
+                // Converts the gameState object to a JSON string and saves it in localStorage.
+                // localStorage is a browser feature that persists data even after the tab is closed.
+                localStorage.setItem('susejClickerSave', JSON.stringify(gameState));
             }
 
             function loadGame() {
-                const savedGame = localStorage.getItem('purrClickerSave_v2');
+                // Retrieves the saved game string from localStorage.
+                const savedGame = localStorage.getItem('susejClickerSave');
                 if (savedGame) {
                     const loadedState = JSON.parse(savedGame);
+                    
+                    // Carefully update the current gameState with the loaded data.
+                    // This prevents issues if you later add new upgrades to the game code.
                     gameState.score = loadedState.score || 0;
                     gameState.clickPower = loadedState.clickPower || 1;
+                    
                     for (const key in loadedState.upgrades) {
+                        // Check if the upgrade from the save file still exists in the current game
                         if (gameState.upgrades[key] && loadedState.upgrades[key]) {
                             gameState.upgrades[key].count = loadedState.upgrades[key].count || 0;
                         }
@@ -304,16 +315,22 @@
             }
 
             function resetGame() {
+                // Asks the user for confirmation before deleting progress.
                 if (confirm('Are you sure you want to reset all your progress? This cannot be undone!')) {
-                    localStorage.removeItem('purrClickerSave_v2');
+                    // Removes the save file from localStorage.
+                    localStorage.removeItem('susejClickerSave');
+                    // Reloads the page to start from the beginning.
                     location.reload();
                 }
             }
             
             let frameCounter = 0;
             function gameLoop() {
+                // Adds passive income every tick (100ms)
                 gameState.score += calculatePurrsPerSecond() / 10;
+                
                 frameCounter++;
+                // To improve performance, only update the display and shop every 10 ticks (1 second).
                 if(frameCounter >= 10) { 
                    updateDisplay();
                    renderUpgrades();
@@ -321,15 +338,24 @@
                 }
             }
             
+            // --- INITIALIZATION ---
+            
+            // Add event listeners for the buttons
             clickerBtn.addEventListener('click', handleManualClick);
             upgradesContainer.addEventListener('click', handleBuyUpgrade);
             resetBtn.addEventListener('click', resetGame);
             
+            // Load progress from localStorage as soon as the page loads
             loadGame();
+            
+            // Initial render of the game state
             updateDisplay();
             renderUpgrades();
 
+            // Start the main game loop (runs every 100ms)
             setInterval(gameLoop, 100);
+            
+            // Start the auto-save timer (saves every 15 seconds)
             setInterval(saveGame, 15000);
         });
     </script>
