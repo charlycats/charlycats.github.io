@@ -212,6 +212,12 @@
         .J { background-color: #00ff00; }
         .O { background-color: #8a2be2; }
         .Z { background-color: #ff0000; }
+
+        /* --- NEW GHOST PIECE STYLE --- */
+        .ghost {
+            background-color: rgba(255, 255, 255, 0.3) !important; /* !important to override piece color */
+            border: 1px dashed rgba(255, 255, 255, 0.5);
+        }
         
         .game-over {
             position: absolute;
@@ -445,7 +451,7 @@
             
             const backgroundMusic = new Audio('tetris-music.mp3');
             backgroundMusic.loop = true;
-            let isMusicStarted = false; // NEW: Flag to track if music has started playing
+            let isMusicStarted = false;
 
             function toggleMusic() {
                 if (backgroundMusic.paused) {
@@ -482,7 +488,6 @@
             let speedMultiplier = 1;
             let piecesPlaced = 0;
             
-            // Create the game board grid
             let boardGrid = [];
             for (let r = 0; r < ROWS; r++) {
                 boardGrid[r] = [];
@@ -496,7 +501,6 @@
                 }
             }
             
-            // Create the next piece display grid
             for (let r = 0; r < 3; r++) {
                 for (let c = 0; c < 3; c++) {
                     const cell = document.createElement('div');
@@ -531,11 +535,10 @@
                 speedMultiplier = 1;
                 piecesPlaced = 0;
 
-                // MODIFIED: Reset music state for a new game
                 if (!backgroundMusic.paused) {
-                    toggleMusic(); // Pause music if it was playing
+                    toggleMusic();
                 }
-                isMusicStarted = false; // Reset the flag
+                isMusicStarted = false;
                 
                 for (let r = 0; r < ROWS; r++) {
                     for (let c = 0; c < COLS; c++) {
@@ -548,6 +551,8 @@
                 generateNextPiece();
                 updateDisplays();
                 updateSpeedDisplay();
+                drawPiece();
+                updateGhost();
                 
                 gameOverScreen.style.display = 'none';
                 
@@ -598,12 +603,13 @@
                     clearInterval(dropInterval);
                     finalScoreDisplay.textContent = score;
                     gameOverScreen.style.display = 'flex';
-                    if (!backgroundMusic.paused) { // Stop music on game over
+                    if (!backgroundMusic.paused) {
                         toggleMusic();
                     }
                 }
                 
                 generateNextPiece();
+                updateGhost();
             }
             
             function generateNextPiece() {
@@ -653,6 +659,7 @@
                     undrawPiece();
                     currentPiece.row++;
                     drawPiece();
+                    updateGhost();
                     return true;
                 }
                 return false;
@@ -663,6 +670,7 @@
                     undrawPiece();
                     currentPiece.col--;
                     drawPiece();
+                    updateGhost();
                 }
             }
             
@@ -671,6 +679,7 @@
                     undrawPiece();
                     currentPiece.col++;
                     drawPiece();
+                    updateGhost();
                 }
             }
             
@@ -682,10 +691,12 @@
                     undrawPiece();
                     currentPiece.shape = rotated;
                     drawPiece();
+                    updateGhost();
                 }
             }
             
             function hardDrop() {
+                undrawGhost();
                 while (moveDown()) {}
                 lockPiece();
                 clearLines();
@@ -741,6 +752,43 @@
                     }
                 }
             }
+
+            // --- NEW GHOST PIECE FUNCTIONS ---
+            function undrawGhost() {
+                const ghostCells = document.querySelectorAll('.ghost');
+                ghostCells.forEach(cell => {
+                    cell.classList.remove('ghost');
+                });
+            }
+
+            function drawGhost() {
+                const { shape, col } = currentPiece;
+                let ghostRow = currentPiece.row;
+
+                while (isValidMove(ghostRow + 1, col, shape)) {
+                    ghostRow++;
+                }
+
+                if (ghostRow > currentPiece.row) {
+                    for (let r = 0; r < shape.length; r++) {
+                        for (let c = 0; c < shape[r].length; c++) {
+                            if (shape[r][c]) {
+                                const finalRow = ghostRow + r;
+                                const finalCol = col + c;
+                                if (finalRow >= 0) {
+                                    document.getElementById(`${finalRow}-${finalCol}`).classList.add('ghost');
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            function updateGhost() {
+                undrawGhost();
+                drawGhost();
+            }
+
             
             function updateCell(row, col, value) {
                 const cell = document.getElementById(`${row}-${col}`);
@@ -757,7 +805,7 @@
                         linesCleared++;
                         boardGrid.splice(r, 1);
                         boardGrid.unshift(Array(COLS).fill(EMPTY));
-                        r++; // Re-check the same row index
+                        r++;
                     }
                 }
                 
@@ -767,7 +815,6 @@
                     lines += linesCleared;
                     level = Math.floor(lines / 10) + 1;
                     updateDisplays();
-                    // Redraw the entire board after clearing lines
                     for(let r = 0; r < ROWS; r++){
                         for(let c = 0; c < COLS; c++){
                             updateCell(r, c, boardGrid[r][c]);
@@ -787,29 +834,30 @@
                 isPaused = !isPaused;
                 if (isPaused) {
                     clearInterval(dropInterval);
-                    if(!backgroundMusic.paused) toggleMusic(); // Pause music on game pause
+                    if(!backgroundMusic.paused) toggleMusic();
                 } else {
                     dropInterval = setInterval(drop, getDropInterval());
-                    if(backgroundMusic.paused && isMusicStarted) toggleMusic(); // Resume music if it was playing
+                    if(backgroundMusic.paused && isMusicStarted) toggleMusic();
                 }
             }
             
-            // MODIFIED Keyboard controls
             document.addEventListener('keydown', (e) => {
-                // NEW: Start music on first interaction
                 if (!isMusicStarted) {
                     toggleMusic();
                     isMusicStarted = true;
                 }
 
-                if (gameOver || isPaused) return;
+                if (gameOver || isPaused) {
+                     if (e.key === 'p' || e.key === 'P') togglePause();
+                     return;
+                };
                 
                 switch(e.key) {
                     case 'ArrowLeft': moveLeft(); break;
                     case 'ArrowRight': moveRight(); break;
-                    case 'ArrowDown': moveDown(); break;
+                    case 'ArrowDown': drop(); break; // Changed to call drop for consistent behavior
                     case 'ArrowUp': rotate(); break;
-                    case ' ': hardDrop(); break;
+                    case ' ': e.preventDefault(); hardDrop(); break; // prevent space from scrolling
                     case 'p': case 'P': togglePause(); break;
                 }
             });
