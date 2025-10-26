@@ -27,11 +27,13 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
+            justify-content: flex-start;
+            min-height: 100vh;
+            overflow-x: hidden;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='%231a1a2e' fill-opacity='0.6'%3E%3Crect x='0' y='0' width='100' height='100'/%3E%3C/g%3E%3Cg fill-rule='evenodd' fill='%239f7aea' fill-opacity='0.05'%3E%3Cpath d='M99 1l-1 1-2 2-3 3-4 4-5 5-6 6-7 7-8 8-9 9-10 10-11 11-12 12-13 13-14 14-15 15-16 16-17 17-18 18-19 19v1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1L99 1z'/%3E%3C/g%3E%3C/svg%3E");
             background-attachment: fixed;
+            padding: 20px;
+            box-sizing: border-box;
         }
         
         h1 {
@@ -39,6 +41,7 @@
             font-weight: 700;
             color: var(--text-color);
             margin-bottom: 20px;
+            text-align: center;
         }
 
         #game-container {
@@ -47,6 +50,7 @@
             border-radius: 10px;
             overflow: hidden;
             position: relative;
+            margin-bottom: 40px;
         }
 
         canvas { display: block; }
@@ -86,6 +90,55 @@
         #retry-button:hover { background-color: #865cd6; }
         #back-button { background-color: #4a4a6a; color: white; font-size: 0.9rem; padding: 10px 20px; }
         #back-button:hover { background-color: #5a5a7a; }
+        
+        /* --- New Styles for WR Text --- */
+        .wr-container {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            margin: 30px 0;
+            max-width: 300px;
+            width: 100%;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        .wr-label {
+            font-size: 1.2rem;
+            color: var(--text-color);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .wr-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-shadow: 0 0 10px rgba(159, 122, 234, 0.5);
+        }
+        
+        .divider {
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--primary-color), transparent);
+            margin: 30px 0;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        /* --- Footer Styles --- */
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        footer p {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -100,6 +153,19 @@
             <a href="index.html" id="back-button" class="btn">Back to Home</a>
         </div>
     </div>
+    
+    <!-- WR Text Added Between Game and Footer -->
+    <div class="wr-container">
+        <div class="wr-label">World Record</div>
+        <div class="wr-value">WR: 23</div>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <footer>
+        <p>Airplane Game &copy; 2023</p>
+        <p>Created with HTML5 Canvas and JavaScript</p>
+    </footer>
     
     <script>
         const canvas = document.getElementById('gameCanvas');
