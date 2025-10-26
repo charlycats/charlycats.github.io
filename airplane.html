@@ -40,8 +40,66 @@
             font-size: 2.5rem;
             font-weight: 700;
             color: var(--text-color);
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             text-align: center;
+        }
+
+        /* --- New Layout for Game and WR Section --- */
+        .game-layout {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            max-width: 900px;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        /* --- Styles for WR Section on Left --- */
+        .wr-container {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            width: 250px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        .wr-label {
+            font-size: 1.5rem;
+            color: var(--text-color);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .wr-value {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-shadow: 0 0 15px rgba(159, 122, 234, 0.6);
+            margin-bottom: 25px;
+        }
+
+        .wr-holder {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .wr-holder-label {
+            font-size: 1rem;
+            color: var(--text-color);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .wr-holder-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-color);
         }
 
         #game-container {
@@ -50,7 +108,6 @@
             border-radius: 10px;
             overflow: hidden;
             position: relative;
-            margin-bottom: 40px;
         }
 
         canvas { display: block; }
@@ -91,41 +148,6 @@
         #back-button { background-color: #4a4a6a; color: white; font-size: 0.9rem; padding: 10px 20px; }
         #back-button:hover { background-color: #5a5a7a; }
         
-        /* --- New Styles for WR Text --- */
-        .wr-container {
-            background-color: var(--card-bg);
-            border-radius: 10px;
-            padding: 25px;
-            margin: 30px 0;
-            max-width: 300px;
-            width: 100%;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
-            text-align: center;
-        }
-        
-        .wr-label {
-            font-size: 1.2rem;
-            color: var(--text-color);
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-        
-        .wr-value {
-            font-size: 3rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            text-shadow: 0 0 10px rgba(159, 122, 234, 0.5);
-        }
-        
-        .divider {
-            height: 2px;
-            background: linear-gradient(to right, transparent, var(--primary-color), transparent);
-            margin: 30px 0;
-            width: 100%;
-            max-width: 800px;
-        }
-        
         /* --- Footer Styles --- */
         footer {
             margin-top: 40px;
@@ -139,28 +161,49 @@
         footer p {
             margin: 5px 0;
         }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            .game-layout {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .wr-container {
+                width: 100%;
+                max-width: 480px;
+            }
+        }
     </style>
 </head>
 <body>
 
     <h1>Airplane Game</h1>
-    <div id="game-container">
-        <canvas id="gameCanvas" width="480" height="640"></canvas>
-        <div id="game-over-screen">
-            <h2>Game Over</h2>
-            <p>Score: <span id="final-score">0</span></p>
-            <button id="retry-button" class="btn">Retry</button>
-            <a href="index.html" id="back-button" class="btn">Back to Home</a>
+    
+    <!-- New Layout with WR Section on Left and Game on Right -->
+    <div class="game-layout">
+        <!-- WR Section on Left -->
+        <div class="wr-container">
+            <div class="wr-label">World Record</div>
+            <div class="wr-value">WR: 23</div>
+            
+            <div class="wr-holder">
+                <div class="wr-holder-label">WR Holder</div>
+                <div class="wr-holder-name">Susej</div>
+            </div>
+        </div>
+        
+        <!-- Game on Right -->
+        <div id="game-container">
+            <canvas id="gameCanvas" width="480" height="640"></canvas>
+            <div id="game-over-screen">
+                <h2>Game Over</h2>
+                <p>Score: <span id="final-score">0</span></p>
+                <button id="retry-button" class="btn">Retry</button>
+                <a href="index.html" id="back-button" class="btn">Back to Home</a>
+            </div>
         </div>
     </div>
-    
-    <!-- WR Text Added Between Game and Footer -->
-    <div class="wr-container">
-        <div class="wr-label">World Record</div>
-        <div class="wr-value">WR: 23</div>
-    </div>
-    
-    <div class="divider"></div>
     
     <footer>
         <p>Airplane Game &copy; 2023</p>
