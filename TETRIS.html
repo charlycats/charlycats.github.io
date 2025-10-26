@@ -23,7 +23,7 @@
         }
         
         .container {
-            max-width: 900px;
+            max-width: 1100px; /* Increased width for new layout */
             margin: 0 auto;
         }
         
@@ -50,6 +50,70 @@
             display: flex;
             gap: 20px;
             justify-content: center;
+            align-items: flex-start; /* Aligns columns to the top */
+        }
+        
+        /* --- NEW LEADERBOARD STYLES --- */
+        .leaderboard-section {
+            flex: 1;
+            min-width: 250px;
+            max-width: 280px;
+            order: -1; /* Puts leaderboard on the left */
+        }
+        
+        .leaderboard-container {
+            background-color: rgba(15, 52, 96, 0.7);
+            border: 2px solid #8a2be2;
+            border-radius: 5px;
+            padding: 12px;
+        }
+        
+        .leaderboard-container h3 {
+            margin-bottom: 8px;
+            text-align: center;
+            color: #9370db;
+            font-size: 1.1rem;
+        }
+        
+        #leaderboard-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            color: #a9b7c6;
+            height: 480px; /* Gives it a fixed height */
+        }
+        
+        #leaderboard-list li {
+            padding: 8px 5px;
+            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+        }
+        
+        #leaderboard-list li:last-child {
+            border-bottom: none;
+        }
+        
+        #leaderboard-list .rank {
+            font-weight: bold;
+            color: #fff;
+            width: 25px;
+            flex-shrink: 0;
+        }
+        
+        #leaderboard-list .name {
+            flex-grow: 1;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            padding: 0 10px;
+        }
+        
+        #leaderboard-list .score {
+            font-weight: bold;
+            color: #fff;
+            flex-shrink: 0;
         }
         
         .game-section {
@@ -213,9 +277,8 @@
         .O { background-color: #8a2be2; }
         .Z { background-color: #ff0000; }
 
-        /* --- NEW GHOST PIECE STYLE --- */
         .ghost {
-            background-color: rgba(255, 255, 255, 0.3) !important; /* !important to override piece color */
+            background-color: rgba(255, 255, 255, 0.3) !important;
             border: 1px dashed rgba(255, 255, 255, 0.5);
         }
         
@@ -332,9 +395,15 @@
             background: linear-gradient(to bottom, #9370db, #7b68ee);
         }
         
-        @media (max-width: 768px) {
+        @media (max-width: 980px) { /* Adjust breakpoint for 3 columns */
             .content {
                 flex-direction: column;
+                align-items: center;
+            }
+            .leaderboard-section {
+                order: 0; /* Reset order for column layout */
+                width: 100%;
+                max-width: 400px;
             }
             .game-board {
                 height: 500px;
@@ -358,6 +427,17 @@
         </div>
         
         <div class="content">
+            <!-- NEW LEADERBOARD SECTION -->
+            <div class="leaderboard-section">
+                <div class="leaderboard-container">
+                    <h3>TOP 5 SCORES</h3>
+                    <ol id="leaderboard-list">
+                        <!-- Scores will be populated by JS -->
+                        <li>Loading...</li>
+                    </ol>
+                </div>
+            </div>
+
             <div class="game-section">
                 <div class="game-board" id="board"></div>
             </div>
@@ -432,6 +512,12 @@
             const MAX_SPEED_MULTIPLIER = 5;
             const BASE_DROP_INTERVAL = 1000;
             const FAST_TRANSITION_DELAY = 50;
+
+            // --- NEW DREAMLO LEADERBOARD CONSTANTS ---
+            const privateKey = 'fzYQOEqlHkydFPQizyTdugh3ZJu6dboEKGgXoxzZQUBA';
+            const publicKey = '68feb0178f40bb119cabee98';
+            const dreamloAddUrl = `https://www.dreamlo.com/lb/${privateKey}/add/`;
+            const dreamloGetUrl = `https://www.dreamlo.com/lb/${publicKey}/pipe/5`;
             
             // DOM elements
             const board = document.getElementById('board');
@@ -446,35 +532,81 @@
             const restartButton = document.getElementById('restart');
             const playMusicButton = document.getElementById('play-music');
             const volumeSlider = document.getElementById('volume');
+            const leaderboardList = document.getElementById('leaderboard-list'); // New leaderboard element
 
-            // --- MUSIC IMPLEMENTATION START ---
-            
-            const backgroundMusic = new Audio('tetris-music.mp3');
+            // --- NEW LEADERBOARD FUNCTIONS ---
+            async function fetchLeaderboard() {
+                leaderboardList.innerHTML = '<li>Loading...</li>';
+                try {
+                    const response = await fetch(dreamloGetUrl);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    
+                    const text = await response.text();
+                    const scores = text.split('\n').filter(line => line.length > 0);
+                    leaderboardList.innerHTML = ''; // Clear loading message
+
+                    if (scores.length === 0) {
+                        leaderboardList.innerHTML = '<li>No scores yet!</li>';
+                        return;
+                    }
+
+                    scores.forEach((entry, index) => {
+                        const [name, scoreValue] = entry.split('|');
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <span class="rank">${index + 1}.</span>
+                            <span class="name">${decodeURIComponent(name)}</span>
+                            <span class="score">${scoreValue}</span>
+                        `;
+                        leaderboardList.appendChild(li);
+                    });
+                } catch (error) {
+                    console.error('Could not fetch leaderboard:', error);
+                    leaderboardList.innerHTML = '<li>Error loading scores</li>';
+                }
+            }
+
+            async function submitScore(name, scoreValue) {
+                const sanitizedName = encodeURIComponent(name);
+                try {
+                    const response = await fetch(`${dreamloAddUrl}${sanitizedName}/${scoreValue}`);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    console.log('Score submitted successfully.');
+                    await fetchLeaderboard(); // Refresh the leaderboard
+                } catch (error) {
+                    console.error('Could not submit score:', error);
+                    alert('There was an error submitting your score.');
+                }
+            }
+
+            function handleScoreSubmission() {
+                const name = prompt("Game Over! Enter your name for the leaderboard (max 12 chars):", "Player");
+                if (name) {
+                    const finalName = name.trim().substring(0, 12);
+                    if (finalName) {
+                       submitScore(finalName, score);
+                    }
+                }
+            }
+
+            // --- MUSIC IMPLEMENTATION ---
+            const backgroundMusic = new Audio('https://www.classicgaming.cc/classics/tetris/music/Tetris.mp3');
             backgroundMusic.loop = true;
             let isMusicStarted = false;
 
             function toggleMusic() {
                 if (backgroundMusic.paused) {
-                    backgroundMusic.play().catch(error => {
-                        console.error("Music play failed:", error);
-                    });
+                    backgroundMusic.play().catch(error => console.error("Music play failed:", error));
                     playMusicButton.textContent = 'Pause';
                 } else {
                     backgroundMusic.pause();
                     playMusicButton.textContent = 'Play';
                 }
             }
-
-            function setVolume() {
-                backgroundMusic.volume = volumeSlider.value / 100;
-            }
-
+            function setVolume() { backgroundMusic.volume = volumeSlider.value / 100; }
             playMusicButton.addEventListener('click', toggleMusic);
             volumeSlider.addEventListener('input', setVolume);
-            
             setVolume();
-            
-            // --- MUSIC IMPLEMENTATION END ---
             
             // Game variables
             let score = 0;
@@ -483,17 +615,14 @@
             let gameOver = false;
             let isPaused = false;
             let dropInterval;
-            let dropStart;
-            let lastDropTime = 0;
             let speedMultiplier = 1;
             let piecesPlaced = 0;
-            
             let boardGrid = [];
+
             for (let r = 0; r < ROWS; r++) {
                 boardGrid[r] = [];
                 for (let c = 0; c < COLS; c++) {
                     boardGrid[r][c] = EMPTY;
-                    
                     const cell = document.createElement('div');
                     cell.classList.add('cell');
                     cell.id = `${r}-${c}`;
@@ -519,7 +648,6 @@
                 O: [[0, 1, 0], [1, 1, 1], [0, 0, 0]],
                 Z: [[1, 1, 0], [0, 1, 1], [0, 0, 0]]
             };
-            
             const COLORS = { S: 'S', U: 'U', s: 's', E: 'E', J: 'J', O: 'O', Z: 'Z' };
             
             let currentPiece = { shape: null, color: null, row: 0, col: 0 };
@@ -531,46 +659,33 @@
                 lines = 0;
                 gameOver = false;
                 isPaused = false;
-                lastDropTime = 0;
                 speedMultiplier = 1;
                 piecesPlaced = 0;
-
-                if (!backgroundMusic.paused) {
-                    toggleMusic();
-                }
+                if (!backgroundMusic.paused) toggleMusic();
                 isMusicStarted = false;
-                
                 for (let r = 0; r < ROWS; r++) {
                     for (let c = 0; c < COLS; c++) {
                         boardGrid[r][c] = EMPTY;
                         updateCell(r, c, EMPTY);
                     }
                 }
-                
                 generateNewPiece();
                 generateNextPiece();
                 updateDisplays();
                 updateSpeedDisplay();
                 drawPiece();
                 updateGhost();
-                
                 gameOverScreen.style.display = 'none';
-                
-                dropStart = Date.now();
                 dropInterval = setInterval(drop, getDropInterval());
             }
             
-            function getDropInterval() {
-                return BASE_DROP_INTERVAL / speedMultiplier;
-            }
+            function getDropInterval() { return BASE_DROP_INTERVAL / speedMultiplier; }
             
             function updateSpeed() {
                 const newSpeedMultiplier = Math.min(MAX_SPEED_MULTIPLIER, 1 + Math.floor(piecesPlaced / 10) * 0.5);
-                
                 if (newSpeedMultiplier !== speedMultiplier) {
                     speedMultiplier = newSpeedMultiplier;
                     updateSpeedDisplay();
-                    
                     if (!isPaused && !gameOver) {
                         clearInterval(dropInterval);
                         dropInterval = setInterval(drop, getDropInterval());
@@ -580,60 +695,46 @@
             
             function updateSpeedDisplay() {
                 speedDisplay.textContent = speedMultiplier.toFixed(1) + 'x';
-                const speedPercentage = (speedMultiplier / MAX_SPEED_MULTIPLIER) * 100;
-                speedBar.style.width = speedPercentage + '%';
+                speedBar.style.width = ((speedMultiplier-1) / (MAX_SPEED_MULTIPLIER-1)) * 100 + '%';
             }
             
             function generateNewPiece() {
-                if (nextPiece.shape) {
-                    currentPiece.shape = nextPiece.shape;
-                    currentPiece.color = nextPiece.color;
-                } else {
-                    const pieces = 'SUsEJOZ';
-                    const randPiece = pieces[Math.floor(Math.random() * pieces.length)];
-                    currentPiece.shape = SHAPES[randPiece];
-                    currentPiece.color = COLORS[randPiece];
-                }
-                
+                currentPiece = nextPiece.shape ? { ...nextPiece } : generateRandomPiece();
                 currentPiece.row = 0;
                 currentPiece.col = Math.floor(COLS / 2) - Math.floor(currentPiece.shape[0].length / 2);
-                
+
                 if (!isValidMove(currentPiece.row, currentPiece.col, currentPiece.shape)) {
                     gameOver = true;
                     clearInterval(dropInterval);
                     finalScoreDisplay.textContent = score;
                     gameOverScreen.style.display = 'flex';
-                    if (!backgroundMusic.paused) {
-                        toggleMusic();
-                    }
+                    if (!backgroundMusic.paused) toggleMusic();
+                    handleScoreSubmission(); // SUBMIT SCORE ON GAME OVER
+                    return;
                 }
                 
                 generateNextPiece();
                 updateGhost();
             }
-            
-            function generateNextPiece() {
+
+            function generateRandomPiece() {
                 const pieces = 'SUsEJOZ';
                 const randPiece = pieces[Math.floor(Math.random() * pieces.length)];
-                nextPiece.shape = SHAPES[randPiece];
-                nextPiece.color = COLORS[randPiece];
-                
-                for (let r = 0; r < 3; r++) {
-                    for (let c = 0; c < 3; c++) {
-                        document.getElementById(`next-${r}-${c}`).className = 'cell';
-                    }
-                }
-                
+                return { shape: SHAPES[randPiece], color: COLORS[randPiece] };
+            }
+            
+            function generateNextPiece() {
+                nextPiece = generateRandomPiece();
                 const { shape, color } = nextPiece;
+                const cells = nextPieceDisplay.querySelectorAll('.cell');
+                cells.forEach(cell => cell.className = 'cell');
                 const offsetX = Math.floor((3 - shape[0].length) / 2);
                 const offsetY = Math.floor((3 - shape.length) / 2);
-                
                 for (let r = 0; r < shape.length; r++) {
                     for (let c = 0; c < shape[r].length; c++) {
                         if (shape[r][c]) {
                             const displayRow = r + offsetY;
                             const displayCol = c + offsetX;
-                            
                             if (displayRow >= 0 && displayRow < 3 && displayCol >= 0 && displayCol < 3) {
                                 document.getElementById(`next-${displayRow}-${displayCol}`).classList.add('filled', color);
                             }
@@ -644,7 +745,6 @@
             
             function drop() {
                 if (gameOver || isPaused) return;
-                
                 if (!moveDown()) {
                     lockPiece();
                     clearLines();
@@ -686,7 +786,6 @@
             function rotate() {
                 const { shape } = currentPiece;
                 const rotated = shape[0].map((_, colIndex) => shape.map(row => row[colIndex]).reverse());
-                
                 if (isValidMove(currentPiece.row, currentPiece.col, rotated)) {
                     undrawPiece();
                     currentPiece.shape = rotated;
@@ -753,31 +852,20 @@
                 }
             }
 
-            // --- NEW GHOST PIECE FUNCTIONS ---
             function undrawGhost() {
-                const ghostCells = document.querySelectorAll('.ghost');
-                ghostCells.forEach(cell => {
-                    cell.classList.remove('ghost');
-                });
+                document.querySelectorAll('.ghost').forEach(cell => cell.classList.remove('ghost'));
             }
 
             function drawGhost() {
                 const { shape, col } = currentPiece;
                 let ghostRow = currentPiece.row;
-
-                while (isValidMove(ghostRow + 1, col, shape)) {
-                    ghostRow++;
-                }
+                while (isValidMove(ghostRow + 1, col, shape)) ghostRow++;
 
                 if (ghostRow > currentPiece.row) {
                     for (let r = 0; r < shape.length; r++) {
                         for (let c = 0; c < shape[r].length; c++) {
-                            if (shape[r][c]) {
-                                const finalRow = ghostRow + r;
-                                const finalCol = col + c;
-                                if (finalRow >= 0) {
-                                    document.getElementById(`${finalRow}-${finalCol}`).classList.add('ghost');
-                                }
+                            if (shape[r][c] && ghostRow + r >= 0) {
+                                document.getElementById(`${ghostRow + r}-${col + c}`).classList.add('ghost');
                             }
                         }
                     }
@@ -788,7 +876,6 @@
                 undrawGhost();
                 drawGhost();
             }
-
             
             function updateCell(row, col, value) {
                 const cell = document.getElementById(`${row}-${col}`);
@@ -808,7 +895,6 @@
                         r++;
                     }
                 }
-                
                 if (linesCleared > 0) {
                     const points = [0, 40, 100, 300, 1200];
                     score += points[linesCleared] * level;
@@ -846,25 +932,23 @@
                     toggleMusic();
                     isMusicStarted = true;
                 }
-
-                if (gameOver || isPaused) {
-                     if (e.key === 'p' || e.key === 'P') togglePause();
-                     return;
-                };
+                if (gameOver || (isPaused && e.key !== 'p' && e.key !== 'P')) return;
                 
                 switch(e.key) {
                     case 'ArrowLeft': moveLeft(); break;
                     case 'ArrowRight': moveRight(); break;
-                    case 'ArrowDown': drop(); break; // Changed to call drop for consistent behavior
+                    case 'ArrowDown': drop(); break;
                     case 'ArrowUp': rotate(); break;
-                    case ' ': e.preventDefault(); hardDrop(); break; // prevent space from scrolling
+                    case ' ': e.preventDefault(); hardDrop(); break;
                     case 'p': case 'P': togglePause(); break;
                 }
             });
             
             restartButton.addEventListener('click', init);
             
+            // Initial Game Start
             init();
+            fetchLeaderboard(); // Fetch scores on page load
         });
     </script>
 </body>
