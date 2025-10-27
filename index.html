@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>charlycats' Website</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -26,9 +26,7 @@
             margin: 0;
             padding: 40px 20px;
             line-height: 1.6;
-
-            /* This is the subtle vector art background, made entirely with CSS */
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='%231a1a2e' fill-opacity='0.6'%3E%3Crect x='0' y='0' width='100' height='100'/%3E%3C/g%3E%3Cg fill-rule='evenodd' fill='%239f7aea' fill-opacity='0.05'%3E%3Cpath d='M99 1l-1 1-2 2-3 3-4 4-5 5-6 6-7 7-8 8-9 9-10 10-11 11-12 12-13 13-14 14-15 15-16 16-17 17-18 18-19 19v1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1L99 1z'/%3E%3C/g%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='%231a1a2e' fill-opacity='0.6'%3E%3Crect x='0' y='0' width='100' height='100'/%3E%3C/g%3E%3Cg fill-rule='evenodd' fill='%239f7aea' fill-opacity='0.05'%3E%3Cpath d='M99 1l-1 1-2 2-3 3-4 4-5 5-6 6-7 7-8 8-9 9-10 10-11 11-12 12-13 13-14 14-15 15-16 16-17 17-18 18-19 19v1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1L99 1z'/%3E%3C/g%3E%3C/svg%3E");
             background-attachment: fixed;
         }
 
@@ -39,7 +37,6 @@
         ::-webkit-scrollbar-thumb:hover { background: #865cd6; }
 
         .container {
-            /* --- CHANGE: Increased max-width for less dead space --- */
             max-width: 1000px; 
             margin: 0 auto;
             padding: 2.5rem;
@@ -98,34 +95,70 @@
         
         .content-section p { font-size: 1rem; margin: 0; }
         
+        /* --- START: NEW GAME CARD STYLES --- */
         .game-grid {
             display: grid;
+            /* Changed minmax to 200px to allow more cards per row */
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            text-align: center;
+            gap: 1.5rem;
         }
 
-        .game-btn {
+        .game-card {
             display: block;
-            padding: 15px 20px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 1rem;
-            font-weight: 600;
+            background-color: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             text-decoration: none;
-            color: #fff;
-            background-color: var(--primary-color);
-            border-radius: 8px;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            color: var(--text-color);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .game-btn:hover { background-color: #865cd6; transform: translateY(-3px); }
-        
-        .game-btn.disabled {
-            background-color: #4a4a6a;
-            cursor: not-allowed;
-            pointer-events: none;
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(159, 122, 234, 0.25);
         }
-        .game-btn.disabled:hover { transform: none; }
+
+        .game-card img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1; /* Enforces a square shape */
+            object-fit: cover; /* Ensures image fills the space nicely */
+            background-color: #000;
+        }
+
+        .game-card-info {
+            padding: 1rem;
+        }
+
+        .game-card-info h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+
+        .game-card-info p {
+            font-size: 0.9rem;
+            color: #a0a0b0;
+            line-height: 1.5;
+        }
+
+        /* Special style for the 'Show More' card */
+        .show-more-card {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 250px; /* Give it some height */
+            background-color: transparent;
+            border: 2px dashed var(--primary-color);
+        }
+        
+        .show-more-card:hover {
+             background-color: rgba(159, 122, 234, 0.1);
+             border-style: solid;
+        }
+        /* --- END: NEW GAME CARD STYLES --- */
 
         .comments-section {
             margin-top: 3rem;
@@ -144,22 +177,18 @@
         
         footer img { width: 50px; opacity: 0.5; }
 
-        /* --- Last.fm Music Stats --- */
         .music-container {
             display: grid;
-            grid-template-columns: 1fr; /* Single column on mobile */
+            grid-template-columns: 1fr;
             gap: 2rem;
         }
 
-        /* --- CHANGE: New layout for desktop --- */
         @media (min-width: 768px) {
             .music-container {
-                /* Create a 2-column grid for the lists */
                 grid-template-columns: 1fr 1fr;
             }
-            /* Make the recent track section span both columns */
             #recent-track-section {
-                grid-column: 1 / -1; /* Span from the first to the last grid line */
+                grid-column: 1 / -1;
             }
         }
 
@@ -171,112 +200,21 @@
             padding-bottom: 0.5rem;
         }
 
-        .music-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .music-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-            background-color: rgba(0,0,0,0.2);
-            padding: 10px;
-            border-radius: 8px;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-
-        .music-item:hover {
-            background-color: rgba(159, 122, 234, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .music-item a {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            color: inherit;
-            width: 100%;
-        }
-
-        .music-item img {
-            width: 50px;
-            height: 50px;
-            border-radius: 6px;
-            margin-right: 12px;
-            object-fit: cover;
-            background-color: var(--border-color); /* Placeholder color */
-            flex-shrink: 0;
-        }
-
-        .music-item-info {
-            overflow: hidden;
-            min-width: 0;
-        }
-
-        .music-item-title {
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: block;
-            color: var(--text-color);
-        }
-
-        .music-item-artist, .music-item-plays {
-            font-size: 0.85rem;
-            color: #a0a0b0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .loading-text {
-            color: #888;
-            font-style: italic;
-        }
-
-        /* --- CHANGE: Update styling for the full-width recent track item --- */
-        #recent-track-section .music-item {
-            padding: 20px;
-            align-items: center;
-        }
-
-        #recent-track-section .music-item img {
-            width: 120px;
-            height: 120px;
-            margin-right: 20px;
-        }
-        
-        #recent-track-section .music-item-info {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        #recent-track-section .music-item-title {
-            font-size: 1.8rem;
-        }
-
-        #recent-track-section .music-item-artist {
-            font-size: 1.1rem;
-        }
-
-
-        #now-playing-status {
-            display: inline-block;
-            background-color: #1DB954; /* Spotify Green */
-            color: white;
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 3px 8px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            letter-spacing: 0.5px;
-            align-self: flex-start; /* Align badge to the left */
-        }
-
+        .music-list { list-style: none; padding: 0; margin: 0; }
+        .music-item { display: flex; align-items: center; margin-bottom: 1rem; background-color: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; transition: background-color 0.3s ease, transform 0.2s ease; }
+        .music-item:hover { background-color: rgba(159, 122, 234, 0.15); transform: translateY(-2px); }
+        .music-item a { display: flex; align-items: center; text-decoration: none; color: inherit; width: 100%; }
+        .music-item img { width: 50px; height: 50px; border-radius: 6px; margin-right: 12px; object-fit: cover; background-color: var(--border-color); flex-shrink: 0; }
+        .music-item-info { overflow: hidden; min-width: 0; }
+        .music-item-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; color: var(--text-color); }
+        .music-item-artist, .music-item-plays { font-size: 0.85rem; color: #a0a0b0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .loading-text { color: #888; font-style: italic; }
+        #recent-track-section .music-item { padding: 20px; align-items: center; }
+        #recent-track-section .music-item img { width: 120px; height: 120px; margin-right: 20px; }
+        #recent-track-section .music-item-info { display: flex; flex-direction: column; justify-content: center; }
+        #recent-track-section .music-item-title { font-size: 1.8rem; }
+        #recent-track-section .music-item-artist { font-size: 1.1rem; }
+        #now-playing-status { display: inline-block; background-color: #1DB954; color: white; font-size: 0.75rem; font-weight: 600; padding: 3px 8px; border-radius: 12px; margin-bottom: 10px; letter-spacing: 0.5px; align-self: flex-start; }
     </style>
 </head>
 <body>
@@ -298,70 +236,70 @@
                 <p>Welcome to Charlycats.com!</p>
             </section>
             
+            <!-- START: UPDATED GAMES SECTION -->
             <section class="content-section">
                 <h3>// Games</h3>
                 <div class="game-grid">
-                    <a href="airplane.html" class="game-btn">Airplane Game</a>
-                    <a href="plinko.html" class="game-btn">Plinko Game</a>
-                    <a href="snake.html" class="game-btn">Snake</a>
-                    <a href="susej-clicker.html" class="game-btn">Susej Clicker</a>
-                    <a href="minesweeper.html" class="game-btn">Minesweeper</a>
+                    <!-- Game Card 1 -->
+                    <a href="TETRIS.html" class="game-card">
+                        <img src="Gameicons/Tetris.png" alt="Airplane Game">
+                        <div class="game-card-info">
+                            <h4>Airplane Game</h4>
+                            <p>Fly your plane and avoid obstacles in this classic arcade challenge.</p>
+                        </div>
+                    </a>
+
+                    <!-- Game Card 2 -->
+                    <a href="plinko.html" class="game-card">
+                        <img src="Gameicons/Plinko.png" alt="Plinko Game">
+                        <div class="game-card-info">
+                            <h4>Plinko Game</h4>
+                            <p>Drop the ball and watch it bounce down to score points at the bottom.</p>
+                        </div>
+                    </a>
+                    
+                    <!-- NEW Game Card 3 -->
+                    <a href="snake.html" class="game-card">
+                        <img src="Gameicons/Snake.png" alt="Snake Game">
+                        <div class="game-card-info">
+                            <h4>Snake Game</h4>
+                            <p>A modern take on the classic. Eat the dots and grow as long as you can!</p>
+                        </div>
+                    </a>
+                    
+                    <!-- "Show More" Card -->
+                    <a href="allgames.html" class="game-card show-more-card">
+                        <div class="game-card-info">
+                            <h4>Show More Games</h4>
+                            <p>Click to see the full collection.</p>
+                        </div>
+                    </a>
                 </div>
             </section>
+            <!-- END: UPDATED GAMES SECTION -->
 
-            <!-- START: LAST.FM MUSIC STATS SECTION -->
             <section class="content-section">
                 <h3>// My Music Corner (via Last.fm)</h3>
                 <div class="music-container">
-                    <!-- Recent Track (Now full width) -->
                     <div class="music-column" id="recent-track-section">
                         <h4>Now Playing / Recently Listened</h4>
-                        <div id="recent-track-container">
-                            <p class="loading-text">Loading...</p>
-                        </div>
+                        <div id="recent-track-container"><p class="loading-text">Loading...</p></div>
                     </div>
-                    <!-- Top Tracks (Now in a 2-col grid) -->
                     <div class="music-column">
                         <h4>Top Tracks (Weekly)</h4>
-                        <ul id="top-tracks-container" class="music-list">
-                            <li class="loading-text">Loading...</li>
-                        </ul>
+                        <ul id="top-tracks-container" class="music-list"><li class="loading-text">Loading...</li></ul>
                     </div>
-                    <!-- Top Artists (Now in a 2-col grid) -->
                     <div class="music-column">
                         <h4>Top Artists (Weekly)</h4>
-                        <ul id="top-artists-container" class="music-list">
-                            <li class="loading-text">Loading...</li>
-                        </ul>
+                        <ul id="top-artists-container" class="music-list"><li class="loading-text">Loading...</li></ul>
                     </div>
                 </div>
             </section>
-            <!-- END: LAST.FM MUSIC STATS SECTION -->
-
 
             <section class="comments-section">
                 <h3 style="text-align:center;">Leave a Comment</h3>
-                <p style="text-align:center; font-size: 0.9rem; color: #888;">
-                    You can log in with GitHub to leave a message.
-                </p>
-
-                <!-- 💖💖💖 Giscus Comment Section - Updated theme to dark 💖💖💖 -->
-                <script src="https://giscus.app/client.js"
-                        data-repo="charlycats/charlycats.github.io"
-                        data-repo-id="R_kgDOPyqOEQ"
-                        data-category="Announcements"
-                        data-category-id="DIC_kwDOPyqOEc4Cwxyo"
-                        data-mapping="pathname"
-                        data-strict="0"
-                        data-reactions-enabled="1"
-                        data-emit-metadata="0"
-                        data-input-position="top"
-                        data-theme="transparent_dark"
-                        data-lang="en"
-                        crossorigin="anonymous"
-                        async>
-                </script>
-                <!-- 💖💖💖 End of Giscus Section 💖💖💖 -->
+                <p style="text-align:center; font-size: 0.9rem; color: #888;">You can log in with GitHub to leave a message.</p>
+                <script src="https://giscus.app/client.js" data-repo="charlycats/charlycats.github.io" data-repo-id="R_kgDOPyqOEQ" data-category="Announcements" data-category-id="DIC_kwDOPyqOEc4Cwxyo" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="transparent_dark" data-lang="en" crossorigin="anonymous" async></script>
             </section>
         </main>
         
@@ -369,11 +307,10 @@
             <img src="https://i.gifer.com/origin/c8/c8a803f295f195e7992762a4d7d2962c_w200.gif" alt="Spinning cat gif">
             <p>charlycats.com v0.1 made by alexxxsss.</p>
         </footer>
-
     </div>
 
-    <!-- JAVASCRIPT FOR LAST.FM API (No changes needed here) -->
     <script>
+        // Your existing Last.fm Javascript remains unchanged here...
         document.addEventListener('DOMContentLoaded', () => {
             const apiKey = '27ba32652768c709c7a4ec7ee8af31e1';
             const username = 'charlycats';
@@ -402,97 +339,42 @@
 
             const displayRecentTrack = async () => {
                 const data = await fetchData({ method: 'user.getrecenttracks', limit: 1 });
-
-                if (!data || !data.recenttracks || !data.recenttracks.track || data.recenttracks.track.length === 0) {
-                    recentTrackContainer.innerHTML = '<p>Could not load recent track.</p>';
-                    return;
-                }
-
+                if (!data || !data.recenttracks || !data.recenttracks.track || data.recenttracks.track.length === 0) { recentTrackContainer.innerHTML = '<p>Could not load recent track.</p>'; return; }
                 const track = data.recenttracks.track[0];
                 const isNowPlaying = track['@attr'] && track['@attr'].nowplaying === 'true';
                 const imageUrl = track.image.find(img => img.size === 'extralarge')?.['#text'] || '';
-
-                const html = `
-                    <div class="music-item">
-                        <a href="${track.url}" target="_blank" rel="noopener noreferrer">
-                            <img src="${imageUrl}" alt="Album art for ${track.name}">
-                            <div class="music-item-info">
-                                ${isNowPlaying ? '<span id="now-playing-status">Now Playing</span>' : ''}
-                                <span class="music-item-title">${track.name}</span>
-                                <span class="music-item-artist">${track.artist['#text']}</span>
-                            </div>
-                        </a>
-                    </div>
-                `;
+                const html = `<div class="music-item"><a href="${track.url}" target="_blank" rel="noopener noreferrer"><img src="${imageUrl}" alt="Album art for ${track.name}"><div class="music-item-info">${isNowPlaying ? '<span id="now-playing-status">Now Playing</span>' : ''}<span class="music-item-title">${track.name}</span><span class="music-item-artist">${track.artist['#text']}</span></div></a></div>`;
                 recentTrackContainer.innerHTML = html;
             };
 
             const displayTopTracks = async () => {
                 const listData = await fetchData({ method: 'user.gettoptracks', period: '7day', limit: 5 });
-
-                if (!listData || !listData.toptracks || !listData.toptracks.track) {
-                    topTracksContainer.innerHTML = '<li>Could not load top tracks.</li>';
-                    return;
-                }
-
+                if (!listData || !listData.toptracks || !listData.toptracks.track) { topTracksContainer.innerHTML = '<li>Could not load top tracks.</li>'; return; }
                 const tracks = listData.toptracks.track;
-                const trackInfoPromises = tracks.map(track =>
-                    fetchData({ method: 'track.getInfo', artist: track.artist.name, track: track.name })
-                );
+                const trackInfoPromises = tracks.map(track => fetchData({ method: 'track.getInfo', artist: track.artist.name, track: track.name }));
                 const trackInfos = await Promise.all(trackInfoPromises);
-
                 const html = trackInfos.map((info, index) => {
                     if (!info || !info.track) return '';
                     const track = info.track;
                     const originalTrackData = tracks[index]; 
                     const imageUrl = (track.album && track.album.image.find(img => img.size === 'large')?.['#text']) || '';
-                    
-                    return `
-                        <li class="music-item">
-                            <a href="${track.url}" target="_blank" rel="noopener noreferrer">
-                                <img src="${imageUrl}" alt="${track.name} album art">
-                                <div class="music-item-info">
-                                    <span class="music-item-title">${track.name}</span>
-                                    <span class="music-item-artist">${track.artist.name}</span>
-                                    <span class="music-item-plays">${originalTrackData.playcount} plays</span>
-                                </div>
-                            </a>
-                        </li>
-                    `;
+                    return `<li class="music-item"><a href="${track.url}" target="_blank" rel="noopener noreferrer"><img src="${imageUrl}" alt="${track.name} album art"><div class="music-item-info"><span class="music-item-title">${track.name}</span><span class="music-item-artist">${track.artist.name}</span><span class="music-item-plays">${originalTrackData.playcount} plays</span></div></a></li>`;
                 }).join('');
                 topTracksContainer.innerHTML = html || '<li>No top tracks this week.</li>';
             };
 
             const displayTopArtists = async () => {
                 const listData = await fetchData({ method: 'user.gettopartists', period: '7day', limit: 5 });
-
-                if (!listData || !listData.topartists || !listData.topartists.artist) {
-                    topArtistsContainer.innerHTML = '<li>Could not load top artists.</li>';
-                    return;
-                }
-
+                if (!listData || !listData.topartists || !listData.topartists.artist) { topArtistsContainer.innerHTML = '<li>Could not load top artists.</li>'; return; }
                 const artists = listData.topartists.artist;
-                const artistInfoPromises = artists.map(artist =>
-                    fetchData({ method: 'artist.getInfo', artist: artist.name })
-                );
+                const artistInfoPromises = artists.map(artist => fetchData({ method: 'artist.getInfo', artist: artist.name }));
                 const artistInfos = await Promise.all(artistInfoPromises);
-
                 const html = artistInfos.map((info, index) => {
                     if (!info || !info.artist) return '';
                     const artist = info.artist;
                     const originalArtistData = artists[index];
                     const imageUrl = artist.image.find(img => img.size === 'large')?.['#text'] || '';
-                    return `
-                        <li class="music-item">
-                            <a href="${artist.url}" target="_blank" rel="noopener noreferrer">
-                                <img src="${imageUrl}" alt="Image of ${artist.name}">
-                                <div class="music-item-info">
-                                    <span class="music-item-title">${artist.name}</span>
-                                    <span class="music-item-plays">${originalArtistData.playcount} plays</span>
-                                </div>
-                            </a>
-                        </li>
-                    `;
+                    return `<li class="music-item"><a href="${artist.url}" target="_blank" rel="noopener noreferrer"><img src="${imageUrl}" alt="Image of ${artist.name}"><div class="music-item-info"><span class="music-item-title">${artist.name}</span><span class="music-item-plays">${originalArtistData.playcount} plays</span></div></a></li>`;
                 }).join('');
                 topArtistsContainer.innerHTML = html || '<li>No top artists this week.</li>';
             };
