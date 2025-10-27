@@ -514,408 +514,410 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- LEADERBOARD SCRIPT START ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- LEADERBOARD SCRIPT START ---
 
-            const privateCode = 'fzYQOEqlHkydFPQizyTdugh3ZJu6dboEKGgXoxzZQUBA';
-            const proxyUrl = 'https://api.allorigins.win/raw?url=';
-            const dreamloUrl = 'http://dreamlo.com/lb/';
+        const privateCode = 'fzYQOEqlHkydFPQizyTdugh3ZJu6dboEKGgXoxzZQUBA';
+        const proxyUrl = 'https://api.allorigins.win/raw?url=';
+        const dreamloUrl = 'http://dreamlo.com/lb/';
 
-            const scoreForm = document.getElementById('scoreForm');
-            const playerNameInput = document.getElementById('playerName');
-            const submitScoreBtn = document.getElementById('submitScoreBtn');
-            const statusDiv = document.getElementById('status');
-            const submitStatusDiv = document.getElementById('submit-status');
-            const refreshBtn = document.getElementById('refreshBtn');
-            const leaderboardContainer = document.getElementById('leaderboard-container');
+        const scoreForm = document.getElementById('scoreForm');
+        const playerNameInput = document.getElementById('playerName');
+        const submitScoreBtn = document.getElementById('submitScoreBtn');
+        const statusDiv = document.getElementById('status');
+        const submitStatusDiv = document.getElementById('submit-status');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const leaderboardContainer = document.getElementById('leaderboard-container');
 
-            function displayScores(scores) {
-                leaderboardContainer.innerHTML = '';
-                if (!scores || scores.length === 0) {
-                    leaderboardContainer.innerHTML = '<p>No scores submitted yet. Be the first!</p>';
-                    return;
-                }
-                const table = document.createElement('table');
-                table.className = 'dreamloLBTable';
-                const thead = document.createElement('thead');
-                thead.innerHTML = `<tr><th>Rank</th><th>Name</th><th>Score</th></tr>`;
-                table.appendChild(thead);
-                const tbody = document.createElement('tbody');
-                scores.forEach((entry, index) => {
-                    const row = document.createElement('tr');
-                    const sanitizedName = entry.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                    row.innerHTML = `<td>${index + 1}</td><td>${sanitizedName}</td><td>${entry.score}</td>`;
-                    tbody.appendChild(row);
+        function displayScores(scores) {
+            leaderboardContainer.innerHTML = '';
+            if (!scores || scores.length === 0) {
+                leaderboardContainer.innerHTML = '<p>No scores submitted yet. Be the first!</p>';
+                return;
+            }
+            const table = document.createElement('table');
+            table.className = 'dreamloLBTable';
+            const thead = document.createElement('thead');
+            thead.innerHTML = `<tr><th>Rank</th><th>Name</th><th>Score</th></tr>`;
+            table.appendChild(thead);
+            const tbody = document.createElement('tbody');
+            scores.forEach((entry, index) => {
+                const row = document.createElement('tr');
+                const sanitizedName = entry.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                row.innerHTML = `<td>${index + 1}</td><td>${sanitizedName}</td><td>${entry.score}</td>`;
+                tbody.appendChild(row);
+            });
+            table.appendChild(tbody);
+            leaderboardContainer.appendChild(table);
+        }
+
+        async function fetchScores() {
+            statusDiv.textContent = 'Refreshing scores...';
+            // --- CHANGE HERE: Added a unique timestamp to prevent caching ---
+            const urlToFetch = `${proxyUrl}${encodeURIComponent(`${dreamloUrl}${privateCode}/json/10?_=${new Date().getTime()}`)}`;
+            
+            try {
+                const response = await fetch(urlToFetch);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                const scores = data.dreamlo?.leaderboard?.entry || [];
+                displayScores(scores);
+                statusDiv.textContent = 'Scores loaded!';
+            } catch (error) {
+                console.error('Error fetching scores:', error);
+                statusDiv.textContent = 'Error fetching scores.';
+                leaderboardContainer.innerHTML = '<p>Could not load scores.</p>';
+            }
+        }
+
+        async function submitGameScore(event) {
+            event.preventDefault();
+            const name = playerNameInput.value.trim();
+            if (!name) {
+                submitStatusDiv.textContent = 'Please enter a name.';
+                return;
+            }
+            submitStatusDiv.textContent = 'Submitting score...';
+            submitScoreBtn.disabled = true;
+
+            // --- CHANGE HERE: Added a unique timestamp to prevent caching ---
+            const urlToFetch = `${proxyUrl}${encodeURIComponent(`${dreamloUrl}${privateCode}/add/${name}/${score}?_=${new Date().getTime()}`)}`;
+
+            try {
+                const response = await fetch(urlToFetch);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                submitStatusDiv.textContent = 'Score submitted successfully!';
+                await fetchScores();
+            } catch (error) {
+                console.error('Error submitting score:', error);
+                submitStatusDiv.textContent = 'Error submitting score.';
+                submitScoreBtn.disabled = false; // Re-enable on error
+            }
+        }
+        
+        // --- LEADERBOARD SCRIPT END ---
+
+
+        // Game constants
+        const COLS = 10;
+        const ROWS = 20;
+        const EMPTY = 'empty';
+        const MAX_SPEED_MULTIPLIER = 5;
+        const BASE_DROP_INTERVAL = 1000;
+        const FAST_TRANSITION_DELAY = 50;
+        
+        // DOM elements
+        const board = document.getElementById('board');
+        const nextPieceDisplay = document.getElementById('next-piece');
+        const scoreDisplay = document.getElementById('score');
+        const levelDisplay = document.getElementById('level');
+        const linesDisplay = document.getElementById('lines');
+        const speedDisplay = document.getElementById('speed');
+        const speedBar = document.getElementById('speed-bar');
+        const gameOverScreen = document.getElementById('game-over');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const restartButton = document.getElementById('restart');
+        const playMusicButton = document.getElementById('play-music');
+        const volumeSlider = document.getElementById('volume');
+        
+        // Use the local tetris-music.mp3 file
+        const backgroundMusic = new Audio('tetris-music.mp3');
+        backgroundMusic.loop = true;
+        let isMusicStarted = false;
+
+        function toggleMusic() {
+            if (backgroundMusic.paused) {
+                backgroundMusic.play().catch(error => {
+                    console.error("Music play failed:", error);
                 });
-                table.appendChild(tbody);
-                leaderboardContainer.appendChild(table);
+                playMusicButton.textContent = 'Pause';
+            } else {
+                backgroundMusic.pause();
+                playMusicButton.textContent = 'Play';
             }
+        }
 
-            async function fetchScores() {
-                statusDiv.textContent = 'Refreshing scores...';
-                const urlToFetch = `${proxyUrl}${encodeURIComponent(`${dreamloUrl}${privateCode}/json/10`)}`;
-                
-                try {
-                    const response = await fetch(urlToFetch);
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    const data = await response.json();
-                    const scores = data.dreamlo?.leaderboard?.entry || [];
-                    displayScores(scores);
-                    statusDiv.textContent = 'Scores loaded!';
-                } catch (error) {
-                    console.error('Error fetching scores:', error);
-                    statusDiv.textContent = 'Error fetching scores.';
-                    leaderboardContainer.innerHTML = '<p>Could not load scores.</p>';
-                }
+        function setVolume() { backgroundMusic.volume = volumeSlider.value / 100; }
+        
+        // Game variables
+        let score = 0, level = 1, lines = 0, gameOver = false, isPaused = false;
+        let dropInterval, dropStart, lastDropTime = 0, speedMultiplier = 1, piecesPlaced = 0;
+        let boardGrid = [];
+
+        for (let r = 0; r < ROWS; r++) {
+            boardGrid[r] = [];
+            for (let c = 0; c < COLS; c++) {
+                boardGrid[r][c] = EMPTY;
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.id = `${r}-${c}`;
+                board.appendChild(cell);
             }
-
-            async function submitGameScore(event) {
-                event.preventDefault();
-                const name = playerNameInput.value.trim();
-                if (!name) {
-                    submitStatusDiv.textContent = 'Please enter a name.';
-                    return;
-                }
-                submitStatusDiv.textContent = 'Submitting score...';
-                submitScoreBtn.disabled = true;
-
-                const urlToFetch = `${proxyUrl}${encodeURIComponent(`${dreamloUrl}${privateCode}/add/${name}/${score}`)}`;
-
-                try {
-                    const response = await fetch(urlToFetch);
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    submitStatusDiv.textContent = 'Score submitted successfully!';
-                    await fetchScores();
-                } catch (error) {
-                    console.error('Error submitting score:', error);
-                    submitStatusDiv.textContent = 'Error submitting score.';
-                    submitScoreBtn.disabled = false; // Re-enable on error
-                }
+        }
+        
+        for (let r = 0; r < 3; r++) {
+            for (let c = 0; c < 3; c++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.id = `next-${r}-${c}`;
+                nextPieceDisplay.appendChild(cell);
             }
+        }
+        
+        const SHAPES = {
+            S: [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]],
+            U: [[1, 0, 0], [1, 1, 1], [0, 0, 0]],
+            s: [[0, 0, 1], [1, 1, 1], [0, 0, 0]],
+            E: [[1, 1], [1, 1]],
+            J: [[0, 1, 1], [1, 1, 0], [0, 0, 0]],
+            O: [[0, 1, 0], [1, 1, 1], [0, 0, 0]],
+            Z: [[1, 1, 0], [0, 1, 1], [0, 0, 0]]
+        };
+        const COLORS = { S: 'S', U: 'U', s: 's', E: 'E', J: 'J', O: 'O', Z: 'Z' };
+        let currentPiece = { shape: null, color: null, row: 0, col: 0 };
+        let nextPiece = { shape: null, color: null };
+        
+        function init() {
+            score = 0; level = 1; lines = 0; gameOver = false; isPaused = false;
+            lastDropTime = 0; speedMultiplier = 1; piecesPlaced = 0;
+
+            if (!backgroundMusic.paused) { toggleMusic(); }
+            isMusicStarted = false;
             
-            // --- LEADERBOARD SCRIPT END ---
-
-
-            // Game constants
-            const COLS = 10;
-            const ROWS = 20;
-            const EMPTY = 'empty';
-            const MAX_SPEED_MULTIPLIER = 5;
-            const BASE_DROP_INTERVAL = 1000;
-            const FAST_TRANSITION_DELAY = 50;
-            
-            // DOM elements
-            const board = document.getElementById('board');
-            const nextPieceDisplay = document.getElementById('next-piece');
-            const scoreDisplay = document.getElementById('score');
-            const levelDisplay = document.getElementById('level');
-            const linesDisplay = document.getElementById('lines');
-            const speedDisplay = document.getElementById('speed');
-            const speedBar = document.getElementById('speed-bar');
-            const gameOverScreen = document.getElementById('game-over');
-            const finalScoreDisplay = document.getElementById('final-score');
-            const restartButton = document.getElementById('restart');
-            const playMusicButton = document.getElementById('play-music');
-            const volumeSlider = document.getElementById('volume');
-            
-            // Use the local tetris-music.mp3 file
-            const backgroundMusic = new Audio('tetris-music.mp3');
-            backgroundMusic.loop = true;
-            let isMusicStarted = false;
-
-            function toggleMusic() {
-                if (backgroundMusic.paused) {
-                    backgroundMusic.play().catch(error => {
-                        console.error("Music play failed:", error);
-                    });
-                    playMusicButton.textContent = 'Pause';
-                } else {
-                    backgroundMusic.pause();
-                    playMusicButton.textContent = 'Play';
-                }
-            }
-
-            function setVolume() { backgroundMusic.volume = volumeSlider.value / 100; }
-            
-            // Game variables
-            let score = 0, level = 1, lines = 0, gameOver = false, isPaused = false;
-            let dropInterval, dropStart, lastDropTime = 0, speedMultiplier = 1, piecesPlaced = 0;
-            let boardGrid = [];
-
             for (let r = 0; r < ROWS; r++) {
-                boardGrid[r] = [];
                 for (let c = 0; c < COLS; c++) {
                     boardGrid[r][c] = EMPTY;
-                    const cell = document.createElement('div');
-                    cell.classList.add('cell');
-                    cell.id = `${r}-${c}`;
-                    board.appendChild(cell);
+                    updateCell(r, c, EMPTY);
                 }
             }
             
-            for (let r = 0; r < 3; r++) {
-                for (let c = 0; c < 3; c++) {
-                    const cell = document.createElement('div');
-                    cell.classList.add('cell');
-                    cell.id = `next-${r}-${c}`;
-                    nextPieceDisplay.appendChild(cell);
-                }
-            }
+            generateNewPiece(); generateNextPiece();
+            updateDisplays(); updateSpeedDisplay(); drawPiece(); updateGhost();
             
-            const SHAPES = {
-                S: [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]],
-                U: [[1, 0, 0], [1, 1, 1], [0, 0, 0]],
-                s: [[0, 0, 1], [1, 1, 1], [0, 0, 0]],
-                E: [[1, 1], [1, 1]],
-                J: [[0, 1, 1], [1, 1, 0], [0, 0, 0]],
-                O: [[0, 1, 0], [1, 1, 1], [0, 0, 0]],
-                Z: [[1, 1, 0], [0, 1, 1], [0, 0, 0]]
-            };
-            const COLORS = { S: 'S', U: 'U', s: 's', E: 'E', J: 'J', O: 'O', Z: 'Z' };
-            let currentPiece = { shape: null, color: null, row: 0, col: 0 };
-            let nextPiece = { shape: null, color: null };
+            gameOverScreen.style.display = 'none';
+            scoreForm.reset();
+            submitStatusDiv.textContent = '';
+            submitScoreBtn.disabled = false;
             
-            function init() {
-                score = 0; level = 1; lines = 0; gameOver = false; isPaused = false;
-                lastDropTime = 0; speedMultiplier = 1; piecesPlaced = 0;
-
-                if (!backgroundMusic.paused) { toggleMusic(); }
-                isMusicStarted = false;
-                
-                for (let r = 0; r < ROWS; r++) {
-                    for (let c = 0; c < COLS; c++) {
-                        boardGrid[r][c] = EMPTY;
-                        updateCell(r, c, EMPTY);
-                    }
-                }
-                
-                generateNewPiece(); generateNextPiece();
-                updateDisplays(); updateSpeedDisplay(); drawPiece(); updateGhost();
-                
-                gameOverScreen.style.display = 'none';
-                scoreForm.reset();
-                submitStatusDiv.textContent = '';
-                submitScoreBtn.disabled = false;
-                
-                dropStart = Date.now();
-                dropInterval = setInterval(drop, getDropInterval());
-            }
-            
-            function getDropInterval() { return BASE_DROP_INTERVAL / speedMultiplier; }
-            
-            function updateSpeed() {
-                const newSpeedMultiplier = Math.min(MAX_SPEED_MULTIPLIER, 1 + Math.floor(piecesPlaced / 10) * 0.5);
-                if (newSpeedMultiplier !== speedMultiplier) {
-                    speedMultiplier = newSpeedMultiplier;
-                    updateSpeedDisplay();
-                    if (!isPaused && !gameOver) {
-                        clearInterval(dropInterval);
-                        dropInterval = setInterval(drop, getDropInterval());
-                    }
-                }
-            }
-            
-            function updateSpeedDisplay() {
-                speedDisplay.textContent = speedMultiplier.toFixed(1) + 'x';
-                const speedPercentage = (speedMultiplier / MAX_SPEED_MULTIPLIER) * 100;
-                speedBar.style.width = speedPercentage + '%';
-            }
-            
-            function generateNewPiece() {
-                if (nextPiece.shape) {
-                    currentPiece.shape = nextPiece.shape;
-                    currentPiece.color = nextPiece.color;
-                } else {
-                    const pieces = 'SUsEJOZ';
-                    const randPiece = pieces[Math.floor(Math.random() * pieces.length)];
-                    currentPiece.shape = SHAPES[randPiece];
-                    currentPiece.color = COLORS[randPiece];
-                }
-                
-                currentPiece.row = 0;
-                currentPiece.col = Math.floor(COLS / 2) - Math.floor(currentPiece.shape[0].length / 2);
-                
-                if (!isValidMove(currentPiece.row, currentPiece.col, currentPiece.shape)) {
-                    gameOver = true;
+            dropStart = Date.now();
+            dropInterval = setInterval(drop, getDropInterval());
+        }
+        
+        function getDropInterval() { return BASE_DROP_INTERVAL / speedMultiplier; }
+        
+        function updateSpeed() {
+            const newSpeedMultiplier = Math.min(MAX_SPEED_MULTIPLIER, 1 + Math.floor(piecesPlaced / 10) * 0.5);
+            if (newSpeedMultiplier !== speedMultiplier) {
+                speedMultiplier = newSpeedMultiplier;
+                updateSpeedDisplay();
+                if (!isPaused && !gameOver) {
                     clearInterval(dropInterval);
-                    finalScoreDisplay.textContent = score;
-                    gameOverScreen.style.display = 'flex';
-                    if (!backgroundMusic.paused) toggleMusic();
-                } else {
-                   generateNextPiece();
-                   updateGhost();
+                    dropInterval = setInterval(drop, getDropInterval());
                 }
             }
-            
-            function generateNextPiece() {
+        }
+        
+        function updateSpeedDisplay() {
+            speedDisplay.textContent = speedMultiplier.toFixed(1) + 'x';
+            const speedPercentage = (speedMultiplier / MAX_SPEED_MULTIPLIER) * 100;
+            speedBar.style.width = speedPercentage + '%';
+        }
+        
+        function generateNewPiece() {
+            if (nextPiece.shape) {
+                currentPiece.shape = nextPiece.shape;
+                currentPiece.color = nextPiece.color;
+            } else {
                 const pieces = 'SUsEJOZ';
                 const randPiece = pieces[Math.floor(Math.random() * pieces.length)];
-                nextPiece.shape = SHAPES[randPiece];
-                nextPiece.color = COLORS[randPiece];
-                
-                for (let r = 0; r < 3; r++) { for (let c = 0; c < 3; c++) { document.getElementById(`next-${r}-${c}`).className = 'cell'; } }
-                
-                const { shape, color } = nextPiece;
-                const offsetX = Math.floor((3 - shape[0].length) / 2);
-                const offsetY = Math.floor((3 - shape.length) / 2);
-                
-                for (let r = 0; r < shape.length; r++) {
-                    for (let c = 0; c < shape[r].length; c++) {
-                        if (shape[r][c]) {
-                            const displayRow = r + offsetY, displayCol = c + offsetX;
-                            if (displayRow >= 0 && displayRow < 3 && displayCol >= 0 && displayCol < 3) {
-                                document.getElementById(`next-${displayRow}-${displayCol}`).classList.add('filled', color);
-                            }
+                currentPiece.shape = SHAPES[randPiece];
+                currentPiece.color = COLORS[randPiece];
+            }
+            
+            currentPiece.row = 0;
+            currentPiece.col = Math.floor(COLS / 2) - Math.floor(currentPiece.shape[0].length / 2);
+            
+            if (!isValidMove(currentPiece.row, currentPiece.col, currentPiece.shape)) {
+                gameOver = true;
+                clearInterval(dropInterval);
+                finalScoreDisplay.textContent = score;
+                gameOverScreen.style.display = 'flex';
+                if (!backgroundMusic.paused) toggleMusic();
+            } else {
+                generateNextPiece();
+                updateGhost();
+            }
+        }
+        
+        function generateNextPiece() {
+            const pieces = 'SUsEJOZ';
+            const randPiece = pieces[Math.floor(Math.random() * pieces.length)];
+            nextPiece.shape = SHAPES[randPiece];
+            nextPiece.color = COLORS[randPiece];
+            
+            for (let r = 0; r < 3; r++) { for (let c = 0; c < 3; c++) { document.getElementById(`next-${r}-${c}`).className = 'cell'; } }
+            
+            const { shape, color } = nextPiece;
+            const offsetX = Math.floor((3 - shape[0].length) / 2);
+            const offsetY = Math.floor((3 - shape.length) / 2);
+            
+            for (let r = 0; r < shape.length; r++) {
+                for (let c = 0; c < shape[r].length; c++) {
+                    if (shape[r][c]) {
+                        const displayRow = r + offsetY, displayCol = c + offsetX;
+                        if (displayRow >= 0 && displayRow < 3 && displayCol >= 0 && displayCol < 3) {
+                            document.getElementById(`next-${displayRow}-${displayCol}`).classList.add('filled', color);
                         }
                     }
                 }
             }
-            
-            function drop() {
-                if (gameOver || isPaused) return;
-                if (!moveDown()) {
-                    lockPiece(); clearLines(); piecesPlaced++; updateSpeed();
-                    setTimeout(generateNewPiece, FAST_TRANSITION_DELAY);
+        }
+        
+        function drop() {
+            if (gameOver || isPaused) return;
+            if (!moveDown()) {
+                lockPiece(); clearLines(); piecesPlaced++; updateSpeed();
+                setTimeout(generateNewPiece, FAST_TRANSITION_DELAY);
+            }
+        }
+        
+        function moveDown() {
+            if (isValidMove(currentPiece.row + 1, currentPiece.col, currentPiece.shape)) {
+                undrawPiece(); currentPiece.row++; drawPiece(); updateGhost(); return true;
+            } return false;
+        }
+        
+        function moveLeft() { if (isValidMove(currentPiece.row, currentPiece.col - 1, currentPiece.shape)) { undrawPiece(); currentPiece.col--; drawPiece(); updateGhost(); } }
+        function moveRight() { if (isValidMove(currentPiece.row, currentPiece.col + 1, currentPiece.shape)) { undrawPiece(); currentPiece.col++; drawPiece(); updateGhost(); } }
+        
+        function rotate() {
+            const { shape } = currentPiece;
+            const rotated = shape[0].map((_, colIndex) => shape.map(row => row[colIndex]).reverse());
+            if (isValidMove(currentPiece.row, currentPiece.col, rotated)) {
+                undrawPiece(); currentPiece.shape = rotated; drawPiece(); updateGhost();
+            }
+        }
+        
+        function hardDrop() {
+            undrawGhost(); while (moveDown()) {}
+            lockPiece(); clearLines(); piecesPlaced++; updateSpeed(); generateNewPiece();
+        }
+        
+        function lockPiece() {
+            const { shape, row, col, color } = currentPiece;
+            for (let r = 0; r < shape.length; r++) {
+                for (let c = 0; c < shape[r].length; c++) {
+                    if (shape[r][c]) boardGrid[row + r][col + c] = color;
                 }
             }
-            
-            function moveDown() {
-                if (isValidMove(currentPiece.row + 1, currentPiece.col, currentPiece.shape)) {
-                    undrawPiece(); currentPiece.row++; drawPiece(); updateGhost(); return true;
-                } return false;
-            }
-            
-            function moveLeft() { if (isValidMove(currentPiece.row, currentPiece.col - 1, currentPiece.shape)) { undrawPiece(); currentPiece.col--; drawPiece(); updateGhost(); } }
-            function moveRight() { if (isValidMove(currentPiece.row, currentPiece.col + 1, currentPiece.shape)) { undrawPiece(); currentPiece.col++; drawPiece(); updateGhost(); } }
-            
-            function rotate() {
-                const { shape } = currentPiece;
-                const rotated = shape[0].map((_, colIndex) => shape.map(row => row[colIndex]).reverse());
-                if (isValidMove(currentPiece.row, currentPiece.col, rotated)) {
-                    undrawPiece(); currentPiece.shape = rotated; drawPiece(); updateGhost();
-                }
-            }
-            
-            function hardDrop() {
-                undrawGhost(); while (moveDown()) {}
-                lockPiece(); clearLines(); piecesPlaced++; updateSpeed(); generateNewPiece();
-            }
-            
-            function lockPiece() {
-                const { shape, row, col, color } = currentPiece;
-                for (let r = 0; r < shape.length; r++) {
-                    for (let c = 0; c < shape[r].length; c++) {
-                        if (shape[r][c]) boardGrid[row + r][col + c] = color;
+        }
+        
+        function isValidMove(row, col, shape) {
+            for (let r = 0; r < shape.length; r++) {
+                for (let c = 0; c < shape[r].length; c++) {
+                    if (shape[r][c]) {
+                        const newRow = row + r, newCol = col + c;
+                        if (newCol < 0 || newCol >= COLS || newRow >= ROWS || (newRow >= 0 && boardGrid[newRow][newCol] !== EMPTY)) { return false; }
                     }
                 }
-            }
-            
-            function isValidMove(row, col, shape) {
-                for (let r = 0; r < shape.length; r++) {
-                    for (let c = 0; c < shape[r].length; c++) {
-                        if (shape[r][c]) {
-                            const newRow = row + r, newCol = col + c;
-                            if (newCol < 0 || newCol >= COLS || newRow >= ROWS || (newRow >= 0 && boardGrid[newRow][newCol] !== EMPTY)) { return false; }
-                        }
-                    }
-                } return true;
-            }
-            
-            function drawPiece() {
-                const { shape, row, col, color } = currentPiece;
-                for (let r = 0; r < shape.length; r++) {
-                    for (let c = 0; c < shape[r].length; c++) {
-                        if (shape[r][c] && row + r >= 0) updateCell(row + r, col + c, color);
-                    }
+            } return true;
+        }
+        
+        function drawPiece() {
+            const { shape, row, col, color } = currentPiece;
+            for (let r = 0; r < shape.length; r++) {
+                for (let c = 0; c < shape[r].length; c++) {
+                    if (shape[r][c] && row + r >= 0) updateCell(row + r, col + c, color);
                 }
             }
-            
-            function undrawPiece() {
-                const { shape, row, col } = currentPiece;
-                for (let r = 0; r < shape.length; r++) {
-                    for (let c = 0; c < shape[r].length; c++) {
-                        if (shape[r][c] && row + r >= 0) updateCell(row + r, col + c, EMPTY);
-                    }
+        }
+        
+        function undrawPiece() {
+            const { shape, row, col } = currentPiece;
+            for (let r = 0; r < shape.length; r++) {
+                for (let c = 0; c < shape[r].length; c++) {
+                    if (shape[r][c] && row + r >= 0) updateCell(row + r, col + c, EMPTY);
                 }
             }
+        }
 
-            function undrawGhost() { document.querySelectorAll('.ghost').forEach(cell => cell.classList.remove('ghost')); }
-            function drawGhost() {
-                const { shape, col } = currentPiece; let ghostRow = currentPiece.row;
-                while (isValidMove(ghostRow + 1, col, shape)) { ghostRow++; }
-                if (ghostRow > currentPiece.row) {
-                    for (let r = 0; r < shape.length; r++) {
-                        for (let c = 0; c < shape[r].length; c++) {
-                            if (shape[r][c]) {
-                                const finalRow = ghostRow + r, finalCol = col + c;
-                                if (finalRow >= 0) document.getElementById(`${finalRow}-${finalCol}`).classList.add('ghost');
-                            }
+        function undrawGhost() { document.querySelectorAll('.ghost').forEach(cell => cell.classList.remove('ghost')); }
+        function drawGhost() {
+            const { shape, col } = currentPiece; let ghostRow = currentPiece.row;
+            while (isValidMove(ghostRow + 1, col, shape)) { ghostRow++; }
+            if (ghostRow > currentPiece.row) {
+                for (let r = 0; r < shape.length; r++) {
+                    for (let c = 0; c < shape[r].length; c++) {
+                        if (shape[r][c]) {
+                            const finalRow = ghostRow + r, finalCol = col + c;
+                            if (finalRow >= 0) document.getElementById(`${finalRow}-${finalCol}`).classList.add('ghost');
                         }
                     }
                 }
             }
-            function updateGhost() { undrawGhost(); drawGhost(); }
-            
-            function updateCell(row, col, value) {
-                const cell = document.getElementById(`${row}-${col}`);
-                cell.className = 'cell';
-                if (value !== EMPTY) cell.classList.add('filled', value);
-            }
-            
-            function clearLines() {
-                let linesCleared = 0;
-                for (let r = ROWS - 1; r >= 0; r--) {
-                    if (boardGrid[r].every(cell => cell !== EMPTY)) {
-                        linesCleared++; boardGrid.splice(r, 1);
-                        boardGrid.unshift(Array(COLS).fill(EMPTY)); r++;
-                    }
-                }
-                
-                if (linesCleared > 0) {
-                    const points = [0, 40, 100, 300, 1200];
-                    score += points[linesCleared] * level;
-                    lines += linesCleared;
-                    level = Math.floor(lines / 10) + 1;
-                    updateDisplays();
-                    for(let r = 0; r < ROWS; r++){ for(let c = 0; c < COLS; c++){ updateCell(r, c, boardGrid[r][c]); } }
+        }
+        function updateGhost() { undrawGhost(); drawGhost(); }
+        
+        function updateCell(row, col, value) {
+            const cell = document.getElementById(`${row}-${col}`);
+            cell.className = 'cell';
+            if (value !== EMPTY) cell.classList.add('filled', value);
+        }
+        
+        function clearLines() {
+            let linesCleared = 0;
+            for (let r = ROWS - 1; r >= 0; r--) {
+                if (boardGrid[r].every(cell => cell !== EMPTY)) {
+                    linesCleared++; boardGrid.splice(r, 1);
+                    boardGrid.unshift(Array(COLS).fill(EMPTY)); r++;
                 }
             }
             
-            function updateDisplays() {
-                scoreDisplay.textContent = score; levelDisplay.textContent = level; linesDisplay.textContent = lines;
+            if (linesCleared > 0) {
+                const points = [0, 40, 100, 300, 1200];
+                score += points[linesCleared] * level;
+                lines += linesCleared;
+                level = Math.floor(lines / 10) + 1;
+                updateDisplays();
+                for(let r = 0; r < ROWS; r++){ for(let c = 0; c < COLS; c++){ updateCell(r, c, boardGrid[r][c]); } }
             }
-            
-            function togglePause() {
-                if (gameOver) return; isPaused = !isPaused;
-                if (isPaused) { clearInterval(dropInterval); if(!backgroundMusic.paused) toggleMusic(); } 
-                else { dropInterval = setInterval(drop, getDropInterval()); if(backgroundMusic.paused && isMusicStarted) toggleMusic(); }
+        }
+        
+        function updateDisplays() {
+            scoreDisplay.textContent = score; levelDisplay.textContent = level; linesDisplay.textContent = lines;
+        }
+        
+        function togglePause() {
+            if (gameOver) return; isPaused = !isPaused;
+            if (isPaused) { clearInterval(dropInterval); if(!backgroundMusic.paused) toggleMusic(); } 
+            else { dropInterval = setInterval(drop, getDropInterval()); if(backgroundMusic.paused && isMusicStarted) toggleMusic(); }
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if (!isMusicStarted) { toggleMusic(); isMusicStarted = true; }
+            if (gameOver || isPaused) { if (e.key.toLowerCase() === 'p') togglePause(); return; };
+            switch(e.key) {
+                case 'ArrowLeft': moveLeft(); break;
+                case 'ArrowRight': moveRight(); break;
+                case 'ArrowDown': drop(); break;
+                case 'ArrowUp': rotate(); break;
+                case ' ': e.preventDefault(); hardDrop(); break;
+                case 'p': case 'P': togglePause(); break;
             }
-            
-            document.addEventListener('keydown', (e) => {
-                if (!isMusicStarted) { toggleMusic(); isMusicStarted = true; }
-                if (gameOver || isPaused) { if (e.key.toLowerCase() === 'p') togglePause(); return; };
-                switch(e.key) {
-                    case 'ArrowLeft': moveLeft(); break;
-                    case 'ArrowRight': moveRight(); break;
-                    case 'ArrowDown': drop(); break;
-                    case 'ArrowUp': rotate(); break;
-                    case ' ': e.preventDefault(); hardDrop(); break;
-                    case 'p': case 'P': togglePause(); break;
-                }
-            });
-            
-            // --- EVENT LISTENERS ---
-            playMusicButton.addEventListener('click', toggleMusic);
-            volumeSlider.addEventListener('input', setVolume);
-            restartButton.addEventListener('click', init);
-            scoreForm.addEventListener('submit', submitGameScore);
-            refreshBtn.addEventListener('click', fetchScores);
-            
-            // --- INITIALIZATION ---
-            setVolume();
-            fetchScores();
-            init();
         });
-    </script>
+        
+        // --- EVENT LISTENERS ---
+        playMusicButton.addEventListener('click', toggleMusic);
+        volumeSlider.addEventListener('input', setVolume);
+        restartButton.addEventListener('click', init);
+        scoreForm.addEventListener('submit', submitGameScore);
+        refreshBtn.addEventListener('click', fetchScores);
+        
+        // --- INITIALIZATION ---
+        setVolume();
+        fetchScores();
+        init();
+    });
+</script>
 </body>
 </html>
