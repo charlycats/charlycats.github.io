@@ -135,17 +135,10 @@
     </div>
 
     <script>
-        // --- Dreamlo Configuration ---
         const privateCode = 'fzYQOEqlHkydFPQizyTdugh3ZJu6dboEKGgXoxzZQUBA';
-        
-        // *** FIX for CORS ***
-        // We use a proxy to bypass browser CORS security policy.
-        // NOTE: We also go back to using HTTP for dreamlo because its HTTPS endpoint
-        // seems to have issues, but the connection to the proxy is secure.
         const proxyUrl = 'https://api.allorigins.win/raw?url=';
         const dreamloUrl = 'http://dreamlo.com/lb/';
 
-        // --- DOM Elements ---
         const scoreForm = document.getElementById('scoreForm');
         const nameInput = document.getElementById('name');
         const scoreInput = document.getElementById('score');
@@ -153,10 +146,8 @@
         const refreshBtn = document.getElementById('refreshBtn');
         const leaderboardContainer = document.getElementById('leaderboard-container');
 
-        // --- Functions ---
-
         function displayScores(scores) {
-            leaderboardContainer.innerHTML = ''; 
+            leaderboardContainer.innerHTML = '';
             if (!scores || scores.length === 0) {
                 leaderboardContainer.innerHTML = '<p>No scores submitted yet. Be the first!</p>';
                 return;
@@ -167,7 +158,7 @@
             thead.innerHTML = `<tr><th>Rank</th><th>Name</th><th>Score</th></tr>`;
             table.appendChild(thead);
             const tbody = document.createElement('tbody');
-            scores.forEach((entry, index) => {
+            scores.forEach((entry, index) => { // This line is now safe
                 const row = document.createElement('tr');
                 const sanitizedName = entry.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 row.innerHTML = `<td>${index + 1}</td><td>${sanitizedName}</td><td>${entry.score}</td>`;
@@ -179,15 +170,22 @@
 
         async function fetchScores() {
             statusDiv.textContent = 'Refreshing scores...';
-            // *** FIX for CORS ***
-            // We wrap the entire Dreamlo URL inside the proxy URL.
             const urlToFetch = `${proxyUrl}${encodeURIComponent(`${dreamloUrl}${privateCode}/json/10`)}`;
             
             try {
                 const response = await fetch(urlToFetch);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
-                const scores = data.dreamlo?.leaderboard?.entry || [];
+
+                // *** THIS IS THE FIX ***
+                // Get the 'entry' part of the response
+                const entry = data.dreamlo?.leaderboard?.entry;
+
+                // Check if 'entry' exists. If it does, check if it's an array.
+                // If it's not an array (i.e., a single object), wrap it in an array.
+                // If it doesn't exist, default to an empty array.
+                const scores = entry ? (Array.isArray(entry) ? entry : [entry]) : [];
+
                 displayScores(scores);
                 statusDiv.textContent = 'Scores loaded successfully!';
             } catch (error) {
@@ -198,7 +196,7 @@
         }
 
         async function submitScore(event) {
-            event.preventDefault(); 
+            event.preventDefault();
             const name = nameInput.value.trim();
             const score = scoreInput.value.trim();
             if (!name || !score) {
@@ -207,23 +205,22 @@
             }
             statusDiv.textContent = 'Submitting score...';
 
-            // *** FIX for CORS ***
-            // We also wrap the 'add' URL inside the proxy URL.
-            const urlToFetch = `${proxyUrl}${encodeURIComponent(`${dreamloUrl}${privateCode}/add/${name}/${score}`)}`;
+            // We must URL-encode the name to handle spaces or special characters
+            const encodedName = encodeURIComponent(name);
+            const urlToFetch = `${proxyUrl}${encodeURIComponent(`${dreamloUrl}${privateCode}/add/${encodedName}/${score}`)}`;
 
             try {
                 const response = await fetch(urlToFetch);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 statusDiv.textContent = 'Score submitted successfully!';
                 scoreForm.reset();
-                await fetchScores(); 
+                await fetchScores();
             } catch (error) {
                 console.error('Error submitting score:', error);
                 statusDiv.textContent = 'Error submitting score. See console.';
             }
         }
 
-        // --- Event Listeners ---
         scoreForm.addEventListener('submit', submitScore);
         refreshBtn.addEventListener('click', fetchScores);
         document.addEventListener('DOMContentLoaded', fetchScores);
