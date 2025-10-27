@@ -16,14 +16,15 @@
             background: linear-gradient(135deg, #1a1a2e, #16213e);
             color: #fff;
             min-height: 100vh;
-            padding: 15px;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start; /* Align to top for better layout */
+            padding: 20px;
         }
         
         .container {
-            max-width: 1100px; /* Increased width for new layout */
+            /* Wider container for the new layout */
+            max-width: 1100px; 
             margin: 0 auto;
         }
         
@@ -50,86 +51,82 @@
             display: flex;
             gap: 20px;
             justify-content: center;
-            align-items: flex-start; /* Aligns columns to the top */
+            align-items: flex-start; /* Align columns to the top */
         }
-        
+
         /* --- NEW LEADERBOARD STYLES --- */
         .leaderboard-section {
-            flex: 1;
-            min-width: 250px;
-            max-width: 280px;
-            order: -1; /* Puts leaderboard on the left */
-        }
-        
-        .leaderboard-container {
+            width: 280px; 
+            flex-shrink: 0; 
             background-color: rgba(15, 52, 96, 0.7);
             border: 2px solid #8a2be2;
             border-radius: 5px;
-            padding: 12px;
+            padding: 15px;
         }
-        
-        .leaderboard-container h3 {
-            margin-bottom: 8px;
+
+        .leaderboard-section h2 {
             text-align: center;
             color: #9370db;
-            font-size: 1.1rem;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            border-bottom: 1px solid #8a2be2;
+            padding-bottom: 8px;
         }
-        
+
         #leaderboard-list {
-            list-style-type: none;
+            list-style: none;
             padding: 0;
             margin: 0;
-            color: #a9b7c6;
-            height: 480px; /* Gives it a fixed height */
+            height: 380px; /* Give it some consistent height */
         }
-        
+
         #leaderboard-list li {
-            padding: 8px 5px;
-            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            padding: 8px 4px;
+            border-bottom: 1px solid rgba(138, 43, 226, 0.2);
             font-size: 0.95rem;
         }
-        
+
         #leaderboard-list li:last-child {
             border-bottom: none;
         }
-        
+
         #leaderboard-list .rank {
             font-weight: bold;
-            color: #fff;
-            width: 25px;
-            flex-shrink: 0;
+            color: #9370db;
+            min-width: 25px;
         }
-        
+
         #leaderboard-list .name {
             flex-grow: 1;
+            margin: 0 10px;
+            text-align: left;
+            overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            overflow: hidden;
-            padding: 0 10px;
         }
-        
+
         #leaderboard-list .score {
             font-weight: bold;
             color: #fff;
-            flex-shrink: 0;
         }
         
         .game-section {
-            flex: 1;
+            flex: 0 1 300px; /* Adjust flex properties for 3-column layout */
             min-width: 300px;
         }
         
         .info-section {
-            flex: 1;
+            flex: 0 0 280px; /* Adjust flex properties for 3-column layout */
             min-width: 250px;
             max-width: 280px;
         }
         
         .game-board {
             width: 100%;
-            height: 540px;
+            height: 600px; /* Increased height for better proportions */
             background-color: #0f3460;
             border: 2px solid #8a2be2;
             display: grid;
@@ -395,21 +392,17 @@
             background: linear-gradient(to bottom, #9370db, #7b68ee);
         }
         
-        @media (max-width: 980px) { /* Adjust breakpoint for 3 columns */
+        @media (max-width: 1120px) { /* Adjust breakpoint for 3 columns */
             .content {
                 flex-direction: column;
                 align-items: center;
             }
-            .leaderboard-section {
-                order: 0; /* Reset order for column layout */
-                width: 100%;
-                max-width: 400px;
+            .leaderboard-section, .info-section {
+                 width: 100%;
+                 max-width: 400px;
             }
-            .game-board {
-                height: 500px;
-            }
-            .info-section {
-                max-width: 100%;
+             #leaderboard-list {
+                height: auto; /* Auto height on smaller screens */
             }
         }
     </style>
@@ -429,15 +422,12 @@
         <div class="content">
             <!-- NEW LEADERBOARD SECTION -->
             <div class="leaderboard-section">
-                <div class="leaderboard-container">
-                    <h3>TOP 5 SCORES</h3>
-                    <ol id="leaderboard-list">
-                        <!-- Scores will be populated by JS -->
-                        <li>Loading...</li>
-                    </ol>
-                </div>
+                <h2>TOP 5 SCORES</h2>
+                <ol id="leaderboard-list">
+                    <!-- Populated by JavaScript -->
+                </ol>
             </div>
-
+            
             <div class="game-section">
                 <div class="game-board" id="board"></div>
             </div>
@@ -505,6 +495,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- LEADERBOARD CONSTANTS ---
+            const DREAMLO_PRIVATE_KEY = 'fzYQOEqlHkydFPQizyTdugh3ZJu6dboEKGgXoxzZQUBA';
+            const DREAMLO_URL = 'https://dreamlo.com/lb/'; // Use HTTPS for security
+
             // Game constants
             const COLS = 10;
             const ROWS = 20;
@@ -512,12 +506,6 @@
             const MAX_SPEED_MULTIPLIER = 5;
             const BASE_DROP_INTERVAL = 1000;
             const FAST_TRANSITION_DELAY = 50;
-
-            // --- NEW DREAMLO LEADERBOARD CONSTANTS ---
-            const privateKey = 'fzYQOEqlHkydFPQizyTdugh3ZJu6dboEKGgXoxzZQUBA';
-            const publicKey = '68feb0178f40bb119cabee98';
-            const dreamloAddUrl = `https://www.dreamlo.com/lb/${privateKey}/add/`;
-            const dreamloGetUrl = `https://www.dreamlo.com/lb/${publicKey}/pipe/5`;
             
             // DOM elements
             const board = document.getElementById('board');
@@ -532,81 +520,107 @@
             const restartButton = document.getElementById('restart');
             const playMusicButton = document.getElementById('play-music');
             const volumeSlider = document.getElementById('volume');
-            const leaderboardList = document.getElementById('leaderboard-list'); // New leaderboard element
+            const leaderboardList = document.getElementById('leaderboard-list'); // New DOM element
 
-            // --- NEW LEADERBOARD FUNCTIONS ---
-            async function fetchLeaderboard() {
+            // --- LEADERBOARD FUNCTIONS ---
+            function escapeHtml(unsafe) {
+                return unsafe
+                     .replace(/&/g, "&amp;")
+                     .replace(/</g, "&lt;")
+                     .replace(/>/g, "&gt;")
+                     .replace(/"/g, "&quot;")
+                     .replace(/'/g, "&#039;");
+            }
+
+            async function getLeaderboard() {
                 leaderboardList.innerHTML = '<li>Loading...</li>';
                 try {
-                    const response = await fetch(dreamloGetUrl);
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const response = await fetch(`${DREAMLO_URL}${DREAMLO_PRIVATE_KEY}/json/5`);
+                    if (!response.ok) throw new Error(`Network response was not ok. Status: ${response.status}`);
                     
-                    const text = await response.text();
-                    const scores = text.split('\n').filter(line => line.length > 0);
+                    const data = await response.json();
+                    
                     leaderboardList.innerHTML = ''; // Clear loading message
 
-                    if (scores.length === 0) {
-                        leaderboardList.innerHTML = '<li>No scores yet!</li>';
-                        return;
-                    }
+                    if (data.dreamlo && data.dreamlo.leaderboard && data.dreamlo.leaderboard.entry) {
+                         // Dreamlo sends an object if there's only one entry, so we ensure it's always an array
+                        const entries = Array.isArray(data.dreamlo.leaderboard.entry) 
+                            ? data.dreamlo.leaderboard.entry 
+                            : [data.dreamlo.leaderboard.entry];
 
-                    scores.forEach((entry, index) => {
-                        const [name, scoreValue] = entry.split('|');
-                        const li = document.createElement('li');
-                        li.innerHTML = `
-                            <span class="rank">${index + 1}.</span>
-                            <span class="name">${decodeURIComponent(name)}</span>
-                            <span class="score">${scoreValue}</span>
-                        `;
-                        leaderboardList.appendChild(li);
-                    });
+                        entries.forEach((entry, index) => {
+                            const li = document.createElement('li');
+                            li.innerHTML = `<span class="rank">${index + 1}.</span> <span class="name">${escapeHtml(entry.name)}</span> <span class="score">${entry.score}</span>`;
+                            leaderboardList.appendChild(li);
+                        });
+                    } else {
+                        leaderboardList.innerHTML = '<li>No scores yet. Be the first!</li>';
+                    }
                 } catch (error) {
-                    console.error('Could not fetch leaderboard:', error);
-                    leaderboardList.innerHTML = '<li>Error loading scores</li>';
+                    console.error('Error fetching leaderboard:', error);
+                    leaderboardList.innerHTML = '<li>Could not load scores.</li>';
                 }
             }
 
             async function submitScore(name, scoreValue) {
-                const sanitizedName = encodeURIComponent(name);
+                if (!name || scoreValue <= 0) return;
+                
+                const cleanName = name.trim().substring(0, 20); // Limit name length
+                if (!cleanName) return;
+                
+                leaderboardList.innerHTML = '<li>Submitting score...</li>';
+
                 try {
-                    const response = await fetch(`${dreamloAddUrl}${sanitizedName}/${scoreValue}`);
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    console.log('Score submitted successfully.');
-                    await fetchLeaderboard(); // Refresh the leaderboard
+                    // Use 'add-json' to get a response and confirm submission
+                    const response = await fetch(`${DREAMLO_URL}${DREAMLO_PRIVATE_KEY}/add-json/${encodeURIComponent(cleanName)}/${scoreValue}`);
+                    if (!response.ok) throw new Error(`Network response was not ok. Status: ${response.status}`);
+                    
+                    // After submission is confirmed, refresh the board
+                    getLeaderboard();
                 } catch (error) {
-                    console.error('Could not submit score:', error);
-                    alert('There was an error submitting your score.');
+                    console.error('Error submitting score:', error);
+                    // In case of error, still try to refresh the leaderboard
+                    getLeaderboard();
                 }
             }
-
-            function handleScoreSubmission() {
-                const name = prompt("Game Over! Enter your name for the leaderboard (max 12 chars):", "Player");
-                if (name) {
-                    const finalName = name.trim().substring(0, 12);
-                    if (finalName) {
-                       submitScore(finalName, score);
-                    }
+            
+            function handleGameOver() {
+                if (score > 0) {
+                    setTimeout(() => {
+                        const playerName = prompt(`Game Over!\nYour score: ${score}\nEnter your name for the leaderboard:`, "Player");
+                        if (playerName) { // playerName will be null if user hits Cancel
+                            submitScore(playerName, score);
+                        }
+                    }, 100);
                 }
             }
-
-            // --- MUSIC IMPLEMENTATION ---
-            const backgroundMusic = new Audio('https://www.classicgaming.cc/classics/tetris/music/Tetris.mp3');
+            
+            // --- MUSIC IMPLEMENTATION START ---
+            const backgroundMusic = new Audio('https://ia800504.us.archive.org/33/items/TetrisThemeMusic/Tetris.mp3'); // Using a reliable source for music
             backgroundMusic.loop = true;
             let isMusicStarted = false;
 
             function toggleMusic() {
                 if (backgroundMusic.paused) {
-                    backgroundMusic.play().catch(error => console.error("Music play failed:", error));
+                    backgroundMusic.play().catch(error => {
+                        console.error("Music play failed:", error);
+                    });
                     playMusicButton.textContent = 'Pause';
                 } else {
                     backgroundMusic.pause();
                     playMusicButton.textContent = 'Play';
                 }
             }
-            function setVolume() { backgroundMusic.volume = volumeSlider.value / 100; }
+
+            function setVolume() {
+                backgroundMusic.volume = volumeSlider.value / 100;
+            }
+
             playMusicButton.addEventListener('click', toggleMusic);
             volumeSlider.addEventListener('input', setVolume);
+            
             setVolume();
+            // --- MUSIC IMPLEMENTATION END ---
             
             // Game variables
             let score = 0;
@@ -615,10 +629,12 @@
             let gameOver = false;
             let isPaused = false;
             let dropInterval;
+            let dropStart;
+            let lastDropTime = 0;
             let speedMultiplier = 1;
             let piecesPlaced = 0;
+            
             let boardGrid = [];
-
             for (let r = 0; r < ROWS; r++) {
                 boardGrid[r] = [];
                 for (let c = 0; c < COLS; c++) {
@@ -649,7 +665,6 @@
                 Z: [[1, 1, 0], [0, 1, 1], [0, 0, 0]]
             };
             const COLORS = { S: 'S', U: 'U', s: 's', E: 'E', J: 'J', O: 'O', Z: 'Z' };
-            
             let currentPiece = { shape: null, color: null, row: 0, col: 0 };
             let nextPiece = { shape: null, color: null };
             
@@ -659,16 +674,22 @@
                 lines = 0;
                 gameOver = false;
                 isPaused = false;
+                lastDropTime = 0;
                 speedMultiplier = 1;
                 piecesPlaced = 0;
-                if (!backgroundMusic.paused) toggleMusic();
+
+                if (!backgroundMusic.paused) {
+                    toggleMusic();
+                }
                 isMusicStarted = false;
+                
                 for (let r = 0; r < ROWS; r++) {
                     for (let c = 0; c < COLS; c++) {
                         boardGrid[r][c] = EMPTY;
                         updateCell(r, c, EMPTY);
                     }
                 }
+                
                 generateNewPiece();
                 generateNextPiece();
                 updateDisplays();
@@ -676,10 +697,13 @@
                 drawPiece();
                 updateGhost();
                 gameOverScreen.style.display = 'none';
+                dropStart = Date.now();
                 dropInterval = setInterval(drop, getDropInterval());
             }
             
-            function getDropInterval() { return BASE_DROP_INTERVAL / speedMultiplier; }
+            function getDropInterval() {
+                return BASE_DROP_INTERVAL / speedMultiplier;
+            }
             
             function updateSpeed() {
                 const newSpeedMultiplier = Math.min(MAX_SPEED_MULTIPLIER, 1 + Math.floor(piecesPlaced / 10) * 0.5);
@@ -695,39 +719,50 @@
             
             function updateSpeedDisplay() {
                 speedDisplay.textContent = speedMultiplier.toFixed(1) + 'x';
-                speedBar.style.width = ((speedMultiplier-1) / (MAX_SPEED_MULTIPLIER-1)) * 100 + '%';
+                const speedPercentage = ((speedMultiplier - 1) / (MAX_SPEED_MULTIPLIER - 1)) * 100;
+                speedBar.style.width = speedPercentage + '%';
             }
             
             function generateNewPiece() {
-                currentPiece = nextPiece.shape ? { ...nextPiece } : generateRandomPiece();
+                if (nextPiece.shape) {
+                    currentPiece.shape = nextPiece.shape;
+                    currentPiece.color = nextPiece.color;
+                } else {
+                    const pieces = 'SUsEJOZ';
+                    const randPiece = pieces[Math.floor(Math.random() * pieces.length)];
+                    currentPiece.shape = SHAPES[randPiece];
+                    currentPiece.color = COLORS[randPiece];
+                }
+                
                 currentPiece.row = 0;
                 currentPiece.col = Math.floor(COLS / 2) - Math.floor(currentPiece.shape[0].length / 2);
-
+                
                 if (!isValidMove(currentPiece.row, currentPiece.col, currentPiece.shape)) {
                     gameOver = true;
                     clearInterval(dropInterval);
                     finalScoreDisplay.textContent = score;
                     gameOverScreen.style.display = 'flex';
                     if (!backgroundMusic.paused) toggleMusic();
-                    handleScoreSubmission(); // SUBMIT SCORE ON GAME OVER
-                    return;
+
+                    handleGameOver(); // Call game over handler to submit score
+                    return; // Stop execution to prevent errors
                 }
                 
                 generateNextPiece();
                 updateGhost();
             }
-
-            function generateRandomPiece() {
-                const pieces = 'SUsEJOZ';
-                const randPiece = pieces[Math.floor(Math.random() * pieces.length)];
-                return { shape: SHAPES[randPiece], color: COLORS[randPiece] };
-            }
             
             function generateNextPiece() {
-                nextPiece = generateRandomPiece();
+                const pieces = 'SUsEJOZ';
+                const randPiece = pieces[Math.floor(Math.random() * pieces.length)];
+                nextPiece.shape = SHAPES[randPiece];
+                nextPiece.color = COLORS[randPiece];
+                for (let r = 0; r < 3; r++) {
+                    for (let c = 0; c < 3; c++) {
+                        document.getElementById(`next-${r}-${c}`).className = 'cell';
+                    }
+                }
                 const { shape, color } = nextPiece;
-                const cells = nextPieceDisplay.querySelectorAll('.cell');
-                cells.forEach(cell => cell.className = 'cell');
                 const offsetX = Math.floor((3 - shape[0].length) / 2);
                 const offsetY = Math.floor((3 - shape.length) / 2);
                 for (let r = 0; r < shape.length; r++) {
@@ -853,19 +888,25 @@
             }
 
             function undrawGhost() {
-                document.querySelectorAll('.ghost').forEach(cell => cell.classList.remove('ghost'));
+                const ghostCells = document.querySelectorAll('.ghost');
+                ghostCells.forEach(cell => cell.classList.remove('ghost'));
             }
 
             function drawGhost() {
                 const { shape, col } = currentPiece;
                 let ghostRow = currentPiece.row;
-                while (isValidMove(ghostRow + 1, col, shape)) ghostRow++;
-
+                while (isValidMove(ghostRow + 1, col, shape)) {
+                    ghostRow++;
+                }
                 if (ghostRow > currentPiece.row) {
                     for (let r = 0; r < shape.length; r++) {
                         for (let c = 0; c < shape[r].length; c++) {
-                            if (shape[r][c] && ghostRow + r >= 0) {
-                                document.getElementById(`${ghostRow + r}-${col + c}`).classList.add('ghost');
+                            if (shape[r][c]) {
+                                const finalRow = ghostRow + r;
+                                const finalCol = col + c;
+                                if (finalRow >= 0) {
+                                    document.getElementById(`${finalRow}-${finalCol}`).classList.add('ghost');
+                                }
                             }
                         }
                     }
@@ -932,8 +973,10 @@
                     toggleMusic();
                     isMusicStarted = true;
                 }
-                if (gameOver || (isPaused && e.key !== 'p' && e.key !== 'P')) return;
-                
+                if (gameOver || isPaused) {
+                     if (e.key === 'p' || e.key === 'P') togglePause();
+                     return;
+                };
                 switch(e.key) {
                     case 'ArrowLeft': moveLeft(); break;
                     case 'ArrowRight': moveRight(); break;
@@ -946,9 +989,9 @@
             
             restartButton.addEventListener('click', init);
             
-            // Initial Game Start
+            // Initial calls
             init();
-            fetchLeaderboard(); // Fetch scores on page load
+            getLeaderboard();
         });
     </script>
 </body>
