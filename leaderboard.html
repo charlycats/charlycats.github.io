@@ -113,8 +113,6 @@
 
     <div class="container">
         <h1>Dreamlo Leaderboard Test</h1>
-
-        <!-- Score Submission Form -->
         <form id="scoreForm">
             <h2>Submit a Score</h2>
             <div class="form-group">
@@ -127,10 +125,7 @@
             </div>
             <button type="submit">Submit Score</button>
         </form>
-
         <div id="status"></div>
-
-        <!-- Leaderboard Display -->
         <hr>
         <h2>Top 10 High Scores</h2>
         <button id="refreshBtn">Refresh</button>
@@ -141,11 +136,14 @@
 
     <script>
         // --- Dreamlo Configuration ---
-        // Your private code from dreamlo
         const privateCode = 'fzYQOEqlHkydFPQizyTdugh3ZJu6dboEKGgXoxzZQUBA';
         
-        // *** THE FIX IS HERE: Changed http to https ***
-        const dreamloUrl = 'https://dreamlo.com/lb/';
+        // *** FIX for CORS ***
+        // We use a proxy to bypass browser CORS security policy.
+        // NOTE: We also go back to using HTTP for dreamlo because its HTTPS endpoint
+        // seems to have issues, but the connection to the proxy is secure.
+        const proxyUrl = 'https://api.allorigins.win/raw?url=';
+        const dreamloUrl = 'http://dreamlo.com/lb/';
 
         // --- DOM Elements ---
         const scoreForm = document.getElementById('scoreForm');
@@ -157,100 +155,71 @@
 
         // --- Functions ---
 
-        /**
-         * Renders the leaderboard data into an HTML table.
-         * @param {Array} scores - An array of score objects from Dreamlo.
-         */
         function displayScores(scores) {
-            leaderboardContainer.innerHTML = ''; // Clear previous content
-
+            leaderboardContainer.innerHTML = ''; 
             if (!scores || scores.length === 0) {
                 leaderboardContainer.innerHTML = '<p>No scores submitted yet. Be the first!</p>';
                 return;
             }
-
             const table = document.createElement('table');
             table.className = 'dreamloLBTable';
-
             const thead = document.createElement('thead');
-            thead.innerHTML = `
-                <tr>
-                    <th>Rank</th>
-                    <th>Name</th>
-                    <th>Score</th>
-                </tr>
-            `;
+            thead.innerHTML = `<tr><th>Rank</th><th>Name</th><th>Score</th></tr>`;
             table.appendChild(thead);
-
             const tbody = document.createElement('tbody');
             scores.forEach((entry, index) => {
                 const row = document.createElement('tr');
                 const sanitizedName = entry.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${sanitizedName}</td>
-                    <td>${entry.score}</td>
-                `;
+                row.innerHTML = `<td>${index + 1}</td><td>${sanitizedName}</td><td>${entry.score}</td>`;
                 tbody.appendChild(row);
             });
             table.appendChild(tbody);
-
             leaderboardContainer.appendChild(table);
         }
 
-        /**
-         * Fetches the top 10 scores from the Dreamlo leaderboard.
-         */
         async function fetchScores() {
             statusDiv.textContent = 'Refreshing scores...';
+            // *** FIX for CORS ***
+            // We wrap the entire Dreamlo URL inside the proxy URL.
+            const urlToFetch = `${proxyUrl}${encodeURIComponent(`${dreamloUrl}${privateCode}/json/10`)}`;
+            
             try {
-                const response = await fetch(`${dreamloUrl}${privateCode}/json/10`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                const response = await fetch(urlToFetch);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
                 const scores = data.dreamlo?.leaderboard?.entry || [];
                 displayScores(scores);
                 statusDiv.textContent = 'Scores loaded successfully!';
             } catch (error) {
                 console.error('Error fetching scores:', error);
-                statusDiv.textContent = 'Error fetching scores. See console for details.';
+                statusDiv.textContent = 'Error fetching scores. See console.';
                 leaderboardContainer.innerHTML = '<p>Could not load scores.</p>';
             }
         }
 
-        /**
-         * Submits a new score to the Dreamlo leaderboard.
-         * @param {Event} event - The form submission event.
-         */
         async function submitScore(event) {
-            event.preventDefault(); // Prevent page reload
-
+            event.preventDefault(); 
             const name = nameInput.value.trim();
             const score = scoreInput.value.trim();
-
             if (!name || !score) {
                 statusDiv.textContent = 'Please enter both a name and a score.';
                 return;
             }
-            
             statusDiv.textContent = 'Submitting score...';
 
+            // *** FIX for CORS ***
+            // We also wrap the 'add' URL inside the proxy URL.
+            const urlToFetch = `${proxyUrl}${encodeURIComponent(`${dreamloUrl}${privateCode}/add/${name}/${score}`)}`;
+
             try {
-                const response = await fetch(`${dreamloUrl}${privateCode}/add/${encodeURIComponent(name)}/${score}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
+                const response = await fetch(urlToFetch);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 statusDiv.textContent = 'Score submitted successfully!';
                 scoreForm.reset();
-                
                 await fetchScores(); 
-
             } catch (error) {
                 console.error('Error submitting score:', error);
-                statusDiv.textContent = 'Error submitting score. See console for details.';
+                statusDiv.textContent = 'Error submitting score. See console.';
             }
         }
 
